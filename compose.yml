@@ -1,24 +1,12 @@
+# Development stack. Start with `docker compose watch` (or `docker compose up --watch`)
+# to sync code changes into the containers and rebuild on dependency changes.
 services:
 
-  proxy:
-    image: traefik:v3.7
-    volumes:
-      # Add Docker as a mounted volume, so that Traefik can read the labels of other services
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command:
-      # Enable Docker in Traefik, so that it reads labels from Docker services
-      - --providers.docker
-      # Do not expose all Docker services, only the ones explicitly exposed
-      - --providers.docker.exposedbydefault=false
-      # Create an entrypoint "http" listening on port 80
-      - --entrypoints.http.address=:80
-      # Enable the access log, with HTTP requests
-      - --accesslog
-      # Enable the Traefik log, for configurations and errors
-      - --log
-
   db:
-    image: postgres:18
+    build: ./db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
       interval: 10s
@@ -33,56 +21,113 @@ services:
 
   adminer:
     image: adminer
+    restart: unless-stopped
     depends_on:
       - db
+    ports:
+      - "8080:8080"
     environment:
       - ADMINER_DESIGN=pepa-linha-dark
-    labels:
-      # Enable Traefik for this service
-      - traefik.enable=true
-      # Route HTTP traffic for the Adminer subdomain
-      - traefik.http.routers.adminer-http.rule=Host(`adminer.${DOMAIN:-localhost}`)
-      - traefik.http.routers.adminer-http.entrypoints=http
-      # Define the port inside of the Docker service to use
-      - traefik.http.services.adminer.loadbalancer.server.port=8080
 
   backend:
-    image: backend:latest
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: dev
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
         restart: true
+    ports:
+      - "8000:8000"
+    # Run migrations + create the first superuser, then start the reloading dev server.
+    command: bash -c "bash scripts/prestart.sh && exec fastapi dev --host 0.0.0.0"
     environment:
+      FASTAPI_ENV: development
       PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
       SECRET_KEY: ${SECRET_KEY:?Variable not set}
       FIRST_SUPERUSER: ${FIRST_SUPERUSER:?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
+      FRONTEND_HOST: http://localhost:5173
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      # Email is disabled (no SMTP_HOST). To enable it, set SMTP_* and EMAILS_FROM_EMAIL here.
       SENTRY_DSN: ${SENTRY_DSN:-}
-
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    develop:
+      watch:
+        - path: ./backend/app
+          action: sync
+          target: /app/backend/app
+          ignore:
+            - __pycache__
+            - frontend
+        - path: ./backend/tests
+          action: sync
+          target: /app/backend/tests
+          ignore:
+            - __pycache__
+        - path: ./backend/pyproject.toml
+          action: rebuild
+        - path: ./uv.lock
+          action: rebuild
 
+  frontend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    labels:
-      # Enable Traefik for this service
-      - traefik.enable=true
+      dockerfile: frontend/Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    environment:
+      # Used by the browser, so it must be reachable from the host.
+      VITE_API_URL: http://localhost:8000
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app/frontend
+          ignore:
+            - node_modules
+            - dist
+            - test-results
+            - blob-report
+            - playwright-report
+        - path: ./frontend/package.json
+          action: rebuild
+        - path: ./bun.lock
+          action: rebuild
 
-      # Define the port inside of the Docker service to use
-      - traefik.http.services.backend.loadbalancer.server.port=8000
-
-      # Route HTTP traffic for this domain
-      - traefik.http.routers.backend-http.rule=Host(`${DOMAIN:-localhost}`)
-      - traefik.http.routers.backend-http.entrypoints=http
+  # End-to-end tests: `docker compose --profile test run --rm playwright`
+  playwright:
+    profiles: [test]
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.playwright
+      args:
+        - NODE_ENV=production
+    ipc: host
+    depends_on:
+      - backend
+    environment:
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER:?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD:?Variable not set}
+      - PLAYWRIGHT_BASE_URL=http://frontend:5173
+      - VITE_API_URL=http://backend:8000
+      - PLAYWRIGHT_HTML_HOST=0.0.0.0
+      - CI=${CI:-}
+    volumes:
+      - ./frontend/blob-report:/app/frontend/blob-report
+      - ./frontend/test-results:/app/frontend/test-results
+    ports:
+      - 9323:9323
 
 volumes:
   app-db-data:

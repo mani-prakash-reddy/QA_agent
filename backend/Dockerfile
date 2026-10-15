@@ -16,7 +16,7 @@ ARG VITE_API_URL=
 RUN bun run build
 
 
-FROM python:3.14
+FROM python:3.14 AS backend
 
 ENV PYTHONUNBUFFERED=1
 
@@ -51,8 +51,6 @@ COPY ./backend/pyproject.toml ./backend/alembic.ini /app/backend/
 
 COPY ./backend/app /app/backend/app
 
-COPY --from=frontend-build /app/backend/app/frontend /app/backend/app/frontend
-
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -62,4 +60,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 WORKDIR /app/backend/
 
+# Development image: no built frontend (the `frontend` service runs Vite).
+FROM backend AS dev
+
+COPY ./backend/tests /app/backend/tests
+RUN mkdir -p app/frontend
+CMD ["fastapi", "dev", "--host", "0.0.0.0"]
+
+# Production image: serves the built frontend from FastAPI.
+FROM backend AS production
+
+COPY --from=frontend-build /app/backend/app/frontend /app/backend/app/frontend
 CMD ["fastapi", "run", "--workers", "4"]

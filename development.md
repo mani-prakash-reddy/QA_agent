@@ -2,12 +2,12 @@
 
 ## Local Development
 
-For local development, run PostgreSQL and Mailpit with Docker Compose, and run the FastAPI and Vite development servers locally.
+For local development, run PostgreSQL with Docker Compose, and run the FastAPI and Vite development servers locally.
 
 Start the supporting services:
 
 ```bash
-docker compose up -d db mailpit
+docker compose up -d db
 ```
 
 Then, from the `backend` directory, install the dependencies and prepare the database:
@@ -38,8 +38,6 @@ Backend API: <http://localhost:8000>
 
 Automatic interactive API documentation with Swagger UI: <http://localhost:8000/docs>
 
-Mailpit: <http://localhost:8025>
-
 The frontend development server uses the backend at `http://localhost:8000`, as configured in `frontend/.env`.
 
 ### Frontend Served by FastAPI
@@ -54,54 +52,43 @@ The build is written to `backend/app/frontend` and served by FastAPI at <http://
 
 ## Full Stack with Docker Compose
 
-To run the backend and built frontend in Docker Compose:
+Everything (Postgres, backend, frontend dev server, Adminer) runs from `compose.yml`:
 
 ```bash
-docker compose run --rm backend bash scripts/prestart.sh
+cp .env.example .env   # first time only, then change the secrets
 docker compose watch
 ```
 
-Now you can open these URLs:
+`watch` builds and starts the stack, syncs source changes into the containers (FastAPI and Vite hot-reload), and rebuilds an image when `backend/pyproject.toml`, `uv.lock`, `frontend/package.json` or `bun.lock` change. Migrations and the first superuser are created automatically on backend start.
 
-Application, with the frontend and API served by FastAPI: <http://localhost:8000>
+| Service | URL |
+|---|---|
+| Frontend (Vite dev server) | <http://localhost:5173> |
+| Backend API / Swagger docs | <http://localhost:8000> / <http://localhost:8000/docs> |
+| Adminer (DB admin) | <http://localhost:8080> |
+| Postgres | `localhost:5432` (db `app`, user `postgres`) |
 
-Automatic interactive API documentation with Swagger UI: <http://localhost:8000/docs>
+Stop a locally running FastAPI/Vite server first, because they use the same ports.
 
-Adminer, database web administration: <http://localhost:8080>
+## Database: pgvector, Apache AGE, JSONB
 
-Traefik UI, to see how the routes are being handled by the proxy: <http://localhost:8090>
+The `db` service is built from `db/Dockerfile`: the upstream `apache/age` Postgres 18 image plus the `pgvector` package (no official image ships both). `db/init-extensions.sql` creates the `vector` and `age` extensions on first volume init, and an Alembic migration does the same for existing databases. `ag_catalog` is appended to the database `search_path`. JSONB is a built-in Postgres type and needs no setup.
 
-Mailpit: <http://localhost:8025>
+If you already had a data volume, run `docker compose down -v` to recreate it (this deletes the data).
 
-Stop a locally running FastAPI server before starting the Compose backend because both use port `8000`.
+## Email
 
-**Note**: The first time you start the stack, it might take a minute for all the services to be ready. To monitor it, use `docker compose logs`, or `docker compose logs backend` for the backend service.
+Email is disabled in the Compose stack (no `SMTP_HOST`), so password recovery and welcome emails are skipped. Set `SMTP_*` and `EMAILS_FROM_EMAIL` on the `backend` service to enable it. The Playwright reset-password test needs a Mailpit instance and will fail without one.
 
-## Mailpit
+## Environment Variables
 
-[Mailpit](https://mailpit.axllent.org) captures emails sent during local development instead of delivering them. The local backend connects to it at `localhost:1025`, and the Compose backend connects to the `mailpit` service. Captured emails are available at <http://localhost:8025>.
+Compose reads `.env` (git-ignored) for interpolation; create it from `.env.example`. Compose overrides hostnames such as the database and SMTP server with service names. Restart the stack after changing variables.
 
-## Docker Compose Files and Environment Variables
-
-The main `compose.yml` file contains the configuration shared by the whole stack. Docker Compose loads it automatically.
-
-The `compose.override.yml` file adds local development settings, such as mounting the source code as a volume. Docker Compose also loads it automatically and applies it on top of `compose.yml`.
-
-The `compose.deploy.yml` file contains the deployment-specific settings, including HTTPS and automatic certificate handling. It is explicitly combined with `compose.yml` when deploying the application.
-
-The backend reads local settings from the `.env` file. Docker Compose also uses it for variable interpolation and passes the settings each container needs.
-
-After changing variables, make sure you restart the stack:
+## End-to-End Tests
 
 ```bash
-docker compose watch
+docker compose --profile test run --rm playwright
 ```
-
-## The `.env` File
-
-The tracked `.env` file contains local development defaults, passwords, and other configuration. Its hostnames use `localhost` for processes running on your machine. Docker Compose overrides hostnames such as the database and SMTP server with their Compose service names.
-
-Do not store deployment secrets in `.env`. Configure them as described in the [FastAPI Cloud deployment guide](./deployment.md) or the [Docker Compose deployment guide](./deployment-docker-compose.md).
 
 ## Pre-commit Hooks and Code Linting
 
