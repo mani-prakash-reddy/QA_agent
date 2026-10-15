@@ -5,6 +5,7 @@ from pydantic import (
     EmailStr,
     HttpUrl,
     PostgresDsn,
+    SecretStr,
     computed_field,
     field_validator,
     model_validator,
@@ -39,6 +40,28 @@ class Settings(BaseSettings):
                 return database_url.replace(scheme, "postgresql+psycopg://", 1)
         return database_url
 
+    # --- QA agent ---
+    REDIS_URL: str = "redis://localhost:6379"
+    # Fernet key(s); comma-separated, newest first (supports rotation).
+    CREDENTIAL_ENCRYPTION_KEY: SecretStr | None = None
+    # Screenshots, BRD files and exports (a shared volume in docker).
+    ARTIFACT_DIR: str = "artifacts"
+    # Hosts the crawler may target (comma-separated). Private/loopback IP
+    # literals are rejected unless listed here.
+    ALLOWED_TARGET_HOSTS: str = "localhost,127.0.0.1"
+
+    # Chat LLM (OpenAI-compatible endpoint, e.g. Groq)
+    LLM_BASE_URL: str | None = None
+    LLM_API_KEY: SecretStr | None = None
+    LLM_MODEL: str = "openai/gpt-oss-120b"
+    LLM_MODEL_FAST: str = "openai/gpt-oss-20b"
+
+    # Embeddings (OpenAI-compatible endpoint, e.g. OpenRouter)
+    EMBEDDING_BASE_URL: str | None = None
+    EMBEDDING_API_KEY: SecretStr | None = None
+    EMBEDDING_MODEL: str = "liquid/lfm-2.5-embedding-350m:free"
+    EMBEDDING_DIM: int = 1024
+
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
     SMTP_PORT: int = 587
@@ -55,6 +78,10 @@ class Settings(BaseSettings):
         return self
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
+
+    @property
+    def allowed_target_hosts(self) -> set[str]:
+        return {h.strip().lower() for h in self.ALLOWED_TARGET_HOSTS.split(",") if h.strip()}
 
     @computed_field  # type: ignore[prop-decorator]
     @property

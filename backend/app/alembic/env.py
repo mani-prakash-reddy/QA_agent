@@ -20,14 +20,23 @@ fileConfig(config.config_file_name)
 # target_metadata = None
 
 from app.models import SQLModel  # noqa
+import app.qa.models  # noqa: F401  (register QA tables)
 from app.core.config import settings # noqa
 
 target_metadata = SQLModel.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+
+def include_object(object, name, type_, reflected, compare_to):
+    """Keep autogenerate away from tables owned by extensions/libraries.
+
+    - LangGraph's checkpointer creates `checkpoint*` tables itself (AsyncPostgresSaver.setup()).
+    - Apache AGE's catalog (`ag_graph`, `ag_label`, ...) is visible because ag_catalog is on
+      the search_path; dropping it would destroy the graph extension.
+    """
+    table = name if type_ == "table" else getattr(getattr(object, "table", None), "name", None)
+    if table and reflected and (table.startswith("checkpoint") or table.startswith("ag_")):
+        return False
+    return True
 
 
 def get_url():
@@ -48,7 +57,8 @@ def run_migrations_offline():
     """
     url = get_url()
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True, compare_type=True
+        url=url, target_metadata=target_metadata, literal_binds=True, compare_type=True,
+        include_object=include_object
     )
 
     with context.begin_transaction():
@@ -73,7 +83,10 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, compare_type=True
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            include_object=include_object,
         )
 
         with context.begin_transaction():

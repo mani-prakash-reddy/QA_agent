@@ -5,6 +5,64 @@ export type ClientOptions = {
 };
 
 /**
+ * AgentPublic
+ */
+export type AgentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Parent Agent Id
+     */
+    parent_agent_id: string | null;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Spec
+     */
+    spec: {
+        [key: string]: unknown;
+    };
+    /**
+     * Result
+     */
+    result: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Steps
+     */
+    steps: number;
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Finished At
+     */
+    finished_at: string | null;
+};
+
+/**
+ * Body_brd-upload_brd
+ */
+export type Body_brd_upload_brd = {
+    /**
+     * File
+     *
+     * PDF, DOCX, Markdown or text BRD
+     */
+    file: Blob | File;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -32,6 +90,513 @@ export type Body_login_login_access_token = {
      * Client Secret
      */
     client_secret?: string | null;
+};
+
+/**
+ * BrdPublic
+ */
+export type BrdPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Mime
+     */
+    mime: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Page Count
+     */
+    page_count: number | null;
+    /**
+     * Chunk Count
+     */
+    chunk_count: number;
+    /**
+     * Requirement Count
+     */
+    requirement_count: number;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * BrdUploadResult
+ */
+export type BrdUploadResult = {
+    document: BrdPublic;
+    /**
+     * Run Id
+     */
+    run_id: string;
+};
+
+/**
+ * BudgetCaps
+ *
+ * Project-level hard caps; no spec may exceed them.
+ */
+export type BudgetCaps = {
+    /**
+     * Max Steps Per Agent
+     */
+    max_steps_per_agent?: number;
+    /**
+     * Max Tokens Per Agent
+     */
+    max_tokens_per_agent?: number;
+    /**
+     * Max Seconds Per Agent
+     */
+    max_seconds_per_agent?: number;
+    /**
+     * Max Cost Usd Per Run
+     */
+    max_cost_usd_per_run?: number | null;
+    /**
+     * Max Concurrent Agents
+     */
+    max_concurrent_agents?: number;
+    /**
+     * Max Total Spawns
+     */
+    max_total_spawns?: number;
+};
+
+/**
+ * BulkAction
+ */
+export type BulkAction = {
+    /**
+     * Ids
+     */
+    ids: Array<string>;
+    /**
+     * Action
+     */
+    action: 'approve' | 'reject';
+};
+
+/**
+ * BulkResult
+ */
+export type BulkResult = {
+    /**
+     * Updated
+     */
+    updated: number;
+    /**
+     * Skipped
+     */
+    skipped: Array<{
+        [key: string]: string;
+    }>;
+};
+
+/**
+ * ChunkPublic
+ */
+export type ChunkPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Ordinal
+     */
+    ordinal: number;
+    /**
+     * Section Path
+     */
+    section_path: string;
+    /**
+     * Page From
+     */
+    page_from: number | null;
+    /**
+     * Page To
+     */
+    page_to: number | null;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * ControlRequest
+ */
+export type ControlRequest = {
+    /**
+     * Action
+     */
+    action: 'pause' | 'resume' | 'stop';
+    /**
+     * Agent Id
+     */
+    agent_id?: string | null;
+};
+
+/**
+ * CrawlConfig
+ */
+export type CrawlConfig = {
+    /**
+     * Max Depth
+     */
+    max_depth?: number;
+    /**
+     * Max States
+     */
+    max_states?: number;
+    /**
+     * Max Steps Per Agent
+     */
+    max_steps_per_agent?: number;
+    /**
+     * Include Globs
+     */
+    include_globs?: Array<string>;
+    /**
+     * Exclude Globs
+     */
+    exclude_globs?: Array<string>;
+    /**
+     * Include Modules
+     */
+    include_modules?: Array<string>;
+    /**
+     * Exclude Modules
+     */
+    exclude_modules?: Array<string>;
+    /**
+     * Allow Destructive
+     */
+    allow_destructive?: boolean;
+    /**
+     * Destructive Allowlist
+     */
+    destructive_allowlist?: Array<string>;
+    /**
+     * Safe Post Patterns
+     */
+    safe_post_patterns?: Array<string>;
+    /**
+     * Ignore Selectors
+     */
+    ignore_selectors?: Array<string>;
+    /**
+     * Shell Toggle Patterns
+     */
+    shell_toggle_patterns?: Array<string>;
+    /**
+     * Explorer Mode
+     */
+    explorer_mode?: 'agentic' | 'deterministic';
+    /**
+     * Max Concurrent Agents
+     */
+    max_concurrent_agents?: number;
+    /**
+     * Screenshots
+     */
+    screenshots?: 'all' | 'new_states' | 'off';
+    /**
+     * Seeds
+     */
+    seeds?: Array<string>;
+    /**
+     * Stale After Days
+     */
+    stale_after_days?: number;
+};
+
+/**
+ * CrawlEventPublic
+ */
+export type CrawlEventPublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Ts
+     */
+    ts: string;
+    /**
+     * Role
+     */
+    role: string | null;
+    /**
+     * Url
+     */
+    url: string | null;
+    /**
+     * Action
+     */
+    action: string | null;
+    /**
+     * Element Label
+     */
+    element_label: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Source
+     */
+    source: string | null;
+};
+
+/**
+ * CrawlLogPublic
+ */
+export type CrawlLogPublic = {
+    /**
+     * Summary
+     */
+    summary: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Events
+     */
+    events: Array<CrawlEventPublic>;
+};
+
+/**
+ * Credentials
+ */
+export type Credentials = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Totp Seed
+     */
+    totp_seed?: null;
+};
+
+/**
+ * ElementPublic
+ */
+export type ElementPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Region
+     */
+    region: string;
+    /**
+     * In Row
+     */
+    in_row: boolean;
+    /**
+     * Attrs
+     */
+    attrs: {
+        [key: string]: unknown;
+    };
+    /**
+     * Is Submit
+     */
+    is_submit: boolean;
+    /**
+     * Is Destructive
+     */
+    is_destructive: boolean;
+    /**
+     * Destructive Reason
+     */
+    destructive_reason: string | null;
+};
+
+/**
+ * EventPublic
+ */
+export type EventPublic = {
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Agent Id
+     */
+    agent_id: string | null;
+    /**
+     * Ts
+     */
+    ts: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Payload
+     */
+    payload: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * FieldPublic
+ */
+export type FieldPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Ordinal
+     */
+    ordinal: number;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Input Type
+     */
+    input_type: string;
+    /**
+     * Required
+     */
+    required: boolean;
+    /**
+     * Min Length
+     */
+    min_length: number | null;
+    /**
+     * Max Length
+     */
+    max_length: number | null;
+    /**
+     * Min Value
+     */
+    min_value: string | null;
+    /**
+     * Max Value
+     */
+    max_value: string | null;
+    /**
+     * Pattern
+     */
+    pattern: string | null;
+    /**
+     * Options
+     */
+    options: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Validation Messages
+     */
+    validation_messages: Array<unknown>;
+    /**
+     * Default Present
+     */
+    default_present: boolean;
+};
+
+/**
+ * FormPublic
+ */
+export type FormPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Submit Label
+     */
+    submit_label: string | null;
+    /**
+     * Fields
+     */
+    fields: Array<FieldPublic>;
+};
+
+/**
+ * GenerationConfig
+ */
+export type GenerationConfig = {
+    /**
+     * Test Types
+     */
+    test_types?: Array<'positive' | 'negative' | 'boundary' | 'field_validation' | 'role_access' | 'e2e' | 'business_rule'>;
+    /**
+     * Max Cases Per Requirement
+     */
+    max_cases_per_requirement?: number;
+    /**
+     * Map Confidence Threshold
+     */
+    map_confidence_threshold?: number;
+    /**
+     * Dedup Cosine
+     */
+    dedup_cosine?: number;
+    /**
+     * Include Flagged Requirements
+     */
+    include_flagged_requirements?: boolean;
+    /**
+     * Models
+     */
+    models?: {
+        [key: string]: string;
+    };
 };
 
 /**
@@ -113,6 +678,52 @@ export type ItemsPublic = {
 };
 
 /**
+ * MatrixPublic
+ */
+export type MatrixPublic = {
+    /**
+     * Roles
+     */
+    roles: Array<string>;
+    /**
+     * Rows
+     */
+    rows: Array<MatrixRow>;
+};
+
+/**
+ * MatrixRow
+ */
+export type MatrixRow = {
+    /**
+     * State Id
+     */
+    state_id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Route
+     */
+    route: string | null;
+    /**
+     * Access
+     */
+    access: {
+        [key: string]: boolean;
+    };
+};
+
+/**
  * Message
  */
 export type Message = {
@@ -159,6 +770,713 @@ export type PrivateUserCreate = {
 };
 
 /**
+ * ProjectCreate
+ */
+export type ProjectCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Target Base Url
+     */
+    target_base_url: string;
+    /**
+     * Environment Ack
+     */
+    environment_ack: boolean;
+    /**
+     * Confidential
+     */
+    confidential?: boolean;
+    crawl_config?: CrawlConfig;
+    generation_config?: GenerationConfig;
+    budget_caps?: BudgetCaps;
+};
+
+/**
+ * ProjectPublic
+ */
+export type ProjectPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Target Base Url
+     */
+    target_base_url: string;
+    /**
+     * Environment Ack
+     */
+    environment_ack: boolean;
+    /**
+     * Confidential
+     */
+    confidential: boolean;
+    /**
+     * Crawl Config
+     */
+    crawl_config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Generation Config
+     */
+    generation_config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Budget Caps
+     */
+    budget_caps: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ProjectUpdate
+ */
+export type ProjectUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Target Base Url
+     */
+    target_base_url?: string | null;
+    /**
+     * Confidential
+     */
+    confidential?: boolean | null;
+    crawl_config?: CrawlConfig | null;
+    generation_config?: GenerationConfig | null;
+    budget_caps?: BudgetCaps | null;
+};
+
+/**
+ * RequirementCreate
+ */
+export type RequirementCreate = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Type
+     */
+    type?: 'functional' | 'business_rule' | 'validation' | 'acceptance_criterion' | 'nfr';
+    /**
+     * Req Key
+     */
+    req_key?: string | null;
+    /**
+     * Module
+     */
+    module?: string | null;
+    /**
+     * Actors
+     */
+    actors?: Array<string>;
+    /**
+     * Acceptance Criteria
+     */
+    acceptance_criteria?: Array<string>;
+};
+
+/**
+ * RequirementDetail
+ */
+export type RequirementDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Document Id
+     */
+    document_id: string | null;
+    /**
+     * Req Key
+     */
+    req_key: string;
+    /**
+     * Key Origin
+     */
+    key_origin: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Actors
+     */
+    actors: Array<unknown>;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Acceptance Criteria
+     */
+    acceptance_criteria: Array<unknown>;
+    /**
+     * Source Anchor
+     */
+    source_anchor: {
+        [key: string]: unknown;
+    };
+    /**
+     * Ambiguity Flag
+     */
+    ambiguity_flag: boolean;
+    /**
+     * Ambiguity Reasons
+     */
+    ambiguity_reasons: Array<unknown>;
+    /**
+     * Ambiguity Resolved
+     */
+    ambiguity_resolved: boolean;
+    /**
+     * Needs Decision
+     */
+    needs_decision: boolean;
+    /**
+     * Review Status
+     */
+    review_status: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Has Embedding
+     */
+    has_embedding: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Source Text
+     */
+    source_text: string | null;
+    /**
+     * Source Page To
+     */
+    source_page_to: number | null;
+};
+
+/**
+ * RequirementPublic
+ */
+export type RequirementPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Document Id
+     */
+    document_id: string | null;
+    /**
+     * Req Key
+     */
+    req_key: string;
+    /**
+     * Key Origin
+     */
+    key_origin: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Actors
+     */
+    actors: Array<unknown>;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Acceptance Criteria
+     */
+    acceptance_criteria: Array<unknown>;
+    /**
+     * Source Anchor
+     */
+    source_anchor: {
+        [key: string]: unknown;
+    };
+    /**
+     * Ambiguity Flag
+     */
+    ambiguity_flag: boolean;
+    /**
+     * Ambiguity Reasons
+     */
+    ambiguity_reasons: Array<unknown>;
+    /**
+     * Ambiguity Resolved
+     */
+    ambiguity_resolved: boolean;
+    /**
+     * Needs Decision
+     */
+    needs_decision: boolean;
+    /**
+     * Review Status
+     */
+    review_status: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Has Embedding
+     */
+    has_embedding: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * RequirementUpdate
+ */
+export type RequirementUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Type
+     */
+    type?: 'functional' | 'business_rule' | 'validation' | 'acceptance_criterion' | 'nfr' | null;
+    /**
+     * Module
+     */
+    module?: string | null;
+    /**
+     * Actors
+     */
+    actors?: Array<string> | null;
+    /**
+     * Acceptance Criteria
+     */
+    acceptance_criteria?: Array<string> | null;
+};
+
+/**
+ * RequirementsPage
+ */
+export type RequirementsPage = {
+    /**
+     * Data
+     */
+    data: Array<RequirementPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * RequirementsSummary
+ */
+export type RequirementsSummary = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * By Status
+     */
+    by_status: {
+        [key: string]: number;
+    };
+    /**
+     * By Type
+     */
+    by_type: {
+        [key: string]: number;
+    };
+    /**
+     * Needs Decision
+     */
+    needs_decision: number;
+    /**
+     * Approved
+     */
+    approved: number;
+};
+
+/**
+ * RoleCreate
+ */
+export type RoleCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Login Recipe
+     */
+    login_recipe?: {
+        [key: string]: unknown;
+    };
+    credentials?: Credentials | null;
+};
+
+/**
+ * RolePublic
+ *
+ * Never includes credential material, only whether it is set.
+ */
+export type RolePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Login Recipe
+     */
+    login_recipe: {
+        [key: string]: unknown;
+    };
+    /**
+     * Has Credentials
+     */
+    has_credentials: boolean;
+};
+
+/**
+ * RunCreate
+ */
+export type RunCreate = {
+    /**
+     * Kind
+     */
+    kind: 'echo' | 'crawl' | 'ingest' | 'map' | 'generate' | 'regenerate' | 'full';
+    /**
+     * Params
+     */
+    params?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * RunPublic
+ */
+export type RunPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Config Snapshot
+     */
+    config_snapshot: {
+        [key: string]: unknown;
+    };
+    /**
+     * Started At
+     */
+    started_at: string | null;
+    /**
+     * Finished At
+     */
+    finished_at: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Summary
+     */
+    summary: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * SnapshotPublic
+ */
+export type SnapshotPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Roles Covered
+     */
+    roles_covered: Array<unknown>;
+    /**
+     * Stats
+     */
+    stats: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Stale After
+     */
+    stale_after: string | null;
+};
+
+/**
+ * StateDetail
+ */
+export type StateDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Heading
+     */
+    heading: string | null;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Route Template
+     */
+    route_template: string | null;
+    /**
+     * Sample Url
+     */
+    sample_url: string | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Nav Path
+     */
+    nav_path: Array<unknown>;
+    /**
+     * Parent State Id
+     */
+    parent_state_id: string | null;
+    /**
+     * Has Screenshot
+     */
+    has_screenshot: boolean;
+    /**
+     * Roles
+     */
+    roles: Array<string>;
+    /**
+     * Elements
+     */
+    elements: Array<ElementPublic>;
+    /**
+     * Forms
+     */
+    forms: Array<FormPublic>;
+    /**
+     * Outgoing
+     */
+    outgoing: Array<TransitionPublic>;
+    /**
+     * Incoming
+     */
+    incoming: Array<TransitionPublic>;
+};
+
+/**
+ * StatePublic
+ */
+export type StatePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Route Template
+     */
+    route_template: string | null;
+    /**
+     * Sample Url
+     */
+    sample_url: string | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Parent State Id
+     */
+    parent_state_id: string | null;
+    /**
+     * Nav Path
+     */
+    nav_path: Array<unknown>;
+    /**
+     * Has Screenshot
+     */
+    has_screenshot: boolean;
+    /**
+     * Roles
+     */
+    roles: Array<string>;
+    /**
+     * N Elements
+     */
+    n_elements: number;
+    /**
+     * N Forms
+     */
+    n_forms: number;
+    /**
+     * Discovery Source
+     */
+    discovery_source: string;
+};
+
+/**
  * Token
  */
 export type Token = {
@@ -170,6 +1488,40 @@ export type Token = {
      * Token Type
      */
     token_type?: string;
+};
+
+/**
+ * TransitionPublic
+ */
+export type TransitionPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * From State Id
+     */
+    from_state_id: string;
+    /**
+     * From Title
+     */
+    from_title: string;
+    /**
+     * To State Id
+     */
+    to_state_id: string;
+    /**
+     * To Title
+     */
+    to_title: string;
+    /**
+     * Via Label
+     */
+    via_label: string;
+    /**
+     * Kind
+     */
+    kind: string;
 };
 
 /**
@@ -340,6 +1692,45 @@ export type ValidationError = {
     ctx?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * Credentials
+ */
+export type CredentialsWritable = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Totp Seed
+     */
+    totp_seed?: string | null;
+};
+
+/**
+ * RoleCreate
+ */
+export type RoleCreateWritable = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Login Recipe
+     */
+    login_recipe?: {
+        [key: string]: unknown;
+    };
+    credentials?: CredentialsWritable | null;
 };
 
 export type loginLoginAccessTokenData = {
@@ -920,6 +2311,1306 @@ export type itemsUpdateItemResponses = {
 };
 
 export type itemsUpdateItemResponse = itemsUpdateItemResponses[keyof itemsUpdateItemResponses];
+
+export type projectsListProjectsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/projects/';
+};
+
+export type projectsListProjectsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsListProjectsError = projectsListProjectsErrors[keyof projectsListProjectsErrors];
+
+export type projectsListProjectsResponses = {
+    /**
+     * Response Projects-List Projects
+     *
+     * Successful Response
+     */
+    200: Array<ProjectPublic>;
+};
+
+export type projectsListProjectsResponse = projectsListProjectsResponses[keyof projectsListProjectsResponses];
+
+export type projectsCreateProjectData = {
+    body: ProjectCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/projects/';
+};
+
+export type projectsCreateProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsCreateProjectError = projectsCreateProjectErrors[keyof projectsCreateProjectErrors];
+
+export type projectsCreateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type projectsCreateProjectResponse = projectsCreateProjectResponses[keyof projectsCreateProjectResponses];
+
+export type projectsDeleteProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type projectsDeleteProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsDeleteProjectError = projectsDeleteProjectErrors[keyof projectsDeleteProjectErrors];
+
+export type projectsDeleteProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type projectsDeleteProjectResponse = projectsDeleteProjectResponses[keyof projectsDeleteProjectResponses];
+
+export type projectsReadProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type projectsReadProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsReadProjectError = projectsReadProjectErrors[keyof projectsReadProjectErrors];
+
+export type projectsReadProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type projectsReadProjectResponse = projectsReadProjectResponses[keyof projectsReadProjectResponses];
+
+export type projectsUpdateProjectData = {
+    body: ProjectUpdate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type projectsUpdateProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsUpdateProjectError = projectsUpdateProjectErrors[keyof projectsUpdateProjectErrors];
+
+export type projectsUpdateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type projectsUpdateProjectResponse = projectsUpdateProjectResponses[keyof projectsUpdateProjectResponses];
+
+export type projectsListRolesData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/roles';
+};
+
+export type projectsListRolesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsListRolesError = projectsListRolesErrors[keyof projectsListRolesErrors];
+
+export type projectsListRolesResponses = {
+    /**
+     * Response Projects-List Roles
+     *
+     * Successful Response
+     */
+    200: Array<RolePublic>;
+};
+
+export type projectsListRolesResponse = projectsListRolesResponses[keyof projectsListRolesResponses];
+
+export type projectsCreateRoleData = {
+    body: RoleCreateWritable;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/roles';
+};
+
+export type projectsCreateRoleErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsCreateRoleError = projectsCreateRoleErrors[keyof projectsCreateRoleErrors];
+
+export type projectsCreateRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: RolePublic;
+};
+
+export type projectsCreateRoleResponse = projectsCreateRoleResponses[keyof projectsCreateRoleResponses];
+
+export type projectsSetRoleCredentialsData = {
+    body: CredentialsWritable;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/roles/{role_id}/credentials';
+};
+
+export type projectsSetRoleCredentialsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsSetRoleCredentialsError = projectsSetRoleCredentialsErrors[keyof projectsSetRoleCredentialsErrors];
+
+export type projectsSetRoleCredentialsResponses = {
+    /**
+     * Successful Response
+     */
+    200: RolePublic;
+};
+
+export type projectsSetRoleCredentialsResponse = projectsSetRoleCredentialsResponses[keyof projectsSetRoleCredentialsResponses];
+
+export type projectsDeleteRoleData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/roles/{role_id}';
+};
+
+export type projectsDeleteRoleErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type projectsDeleteRoleError = projectsDeleteRoleErrors[keyof projectsDeleteRoleErrors];
+
+export type projectsDeleteRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type projectsDeleteRoleResponse = projectsDeleteRoleResponses[keyof projectsDeleteRoleResponses];
+
+export type runsListRunsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/projects/{project_id}/runs';
+};
+
+export type runsListRunsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsListRunsError = runsListRunsErrors[keyof runsListRunsErrors];
+
+export type runsListRunsResponses = {
+    /**
+     * Response Runs-List Runs
+     *
+     * Successful Response
+     */
+    200: Array<RunPublic>;
+};
+
+export type runsListRunsResponse = runsListRunsResponses[keyof runsListRunsResponses];
+
+export type runsCreateRunData = {
+    body: RunCreate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/runs';
+};
+
+export type runsCreateRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsCreateRunError = runsCreateRunErrors[keyof runsCreateRunErrors];
+
+export type runsCreateRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunPublic;
+};
+
+export type runsCreateRunResponse = runsCreateRunResponses[keyof runsCreateRunResponses];
+
+export type runsReadRunData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/runs/{run_id}';
+};
+
+export type runsReadRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsReadRunError = runsReadRunErrors[keyof runsReadRunErrors];
+
+export type runsReadRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunPublic;
+};
+
+export type runsReadRunResponse = runsReadRunResponses[keyof runsReadRunResponses];
+
+export type runsListAgentsData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/runs/{run_id}/agents';
+};
+
+export type runsListAgentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsListAgentsError = runsListAgentsErrors[keyof runsListAgentsErrors];
+
+export type runsListAgentsResponses = {
+    /**
+     * Response Runs-List Agents
+     *
+     * Successful Response
+     */
+    200: Array<AgentPublic>;
+};
+
+export type runsListAgentsResponse = runsListAgentsResponses[keyof runsListAgentsResponses];
+
+export type runsListEventsData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: {
+        /**
+         * After Seq
+         */
+        after_seq?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Agent Id
+         */
+        agent_id?: string | null;
+    };
+    url: '/api/v1/runs/{run_id}/events';
+};
+
+export type runsListEventsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsListEventsError = runsListEventsErrors[keyof runsListEventsErrors];
+
+export type runsListEventsResponses = {
+    /**
+     * Response Runs-List Events
+     *
+     * Successful Response
+     */
+    200: Array<EventPublic>;
+};
+
+export type runsListEventsResponse = runsListEventsResponses[keyof runsListEventsResponses];
+
+export type runsControlRunData = {
+    body: ControlRequest;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/runs/{run_id}/control';
+};
+
+export type runsControlRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsControlRunError = runsControlRunErrors[keyof runsControlRunErrors];
+
+export type runsControlRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type runsControlRunResponse = runsControlRunResponses[keyof runsControlRunResponses];
+
+export type runsStreamRunData = {
+    body?: never;
+    headers?: {
+        /**
+         * Last-Event-Id
+         */
+        'last-event-id'?: string | null;
+    };
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: {
+        /**
+         * After
+         */
+        after?: string | null;
+    };
+    url: '/api/v1/runs/{run_id}/stream';
+};
+
+export type runsStreamRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsStreamRunError = runsStreamRunErrors[keyof runsStreamRunErrors];
+
+export type runsStreamRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type knowledgeListSnapshotsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/snapshots';
+};
+
+export type knowledgeListSnapshotsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeListSnapshotsError = knowledgeListSnapshotsErrors[keyof knowledgeListSnapshotsErrors];
+
+export type knowledgeListSnapshotsResponses = {
+    /**
+     * Response Knowledge-List Snapshots
+     *
+     * Successful Response
+     */
+    200: Array<SnapshotPublic>;
+};
+
+export type knowledgeListSnapshotsResponse = knowledgeListSnapshotsResponses[keyof knowledgeListSnapshotsResponses];
+
+export type knowledgeListStatesData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query?: {
+        /**
+         * Kind
+         */
+        kind?: string | null;
+        /**
+         * Module
+         */
+        module?: string | null;
+        /**
+         * Role
+         */
+        role?: string | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+    };
+    url: '/api/v1/snapshots/{snapshot_id}/states';
+};
+
+export type knowledgeListStatesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeListStatesError = knowledgeListStatesErrors[keyof knowledgeListStatesErrors];
+
+export type knowledgeListStatesResponses = {
+    /**
+     * Response Knowledge-List States
+     *
+     * Successful Response
+     */
+    200: Array<StatePublic>;
+};
+
+export type knowledgeListStatesResponse = knowledgeListStatesResponses[keyof knowledgeListStatesResponses];
+
+export type knowledgeReadStateData = {
+    body?: never;
+    path: {
+        /**
+         * State Id
+         */
+        state_id: string;
+    };
+    query?: never;
+    url: '/api/v1/states/{state_id}';
+};
+
+export type knowledgeReadStateErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeReadStateError = knowledgeReadStateErrors[keyof knowledgeReadStateErrors];
+
+export type knowledgeReadStateResponses = {
+    /**
+     * Successful Response
+     */
+    200: StateDetail;
+};
+
+export type knowledgeReadStateResponse = knowledgeReadStateResponses[keyof knowledgeReadStateResponses];
+
+export type knowledgeStateScreenshotData = {
+    body?: never;
+    path: {
+        /**
+         * State Id
+         */
+        state_id: string;
+    };
+    query?: never;
+    url: '/api/v1/states/{state_id}/screenshot';
+};
+
+export type knowledgeStateScreenshotErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeStateScreenshotError = knowledgeStateScreenshotErrors[keyof knowledgeStateScreenshotErrors];
+
+export type knowledgeStateScreenshotResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type knowledgeRoleMatrixData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query?: never;
+    url: '/api/v1/snapshots/{snapshot_id}/matrix';
+};
+
+export type knowledgeRoleMatrixErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeRoleMatrixError = knowledgeRoleMatrixErrors[keyof knowledgeRoleMatrixErrors];
+
+export type knowledgeRoleMatrixResponses = {
+    /**
+     * Successful Response
+     */
+    200: MatrixPublic;
+};
+
+export type knowledgeRoleMatrixResponse = knowledgeRoleMatrixResponses[keyof knowledgeRoleMatrixResponses];
+
+export type knowledgeExportSnapshotData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query?: never;
+    url: '/api/v1/snapshots/{snapshot_id}/export.json';
+};
+
+export type knowledgeExportSnapshotErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeExportSnapshotError = knowledgeExportSnapshotErrors[keyof knowledgeExportSnapshotErrors];
+
+export type knowledgeExportSnapshotResponses = {
+    /**
+     * Response Knowledge-Export Snapshot
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type knowledgeExportSnapshotResponse = knowledgeExportSnapshotResponses[keyof knowledgeExportSnapshotResponses];
+
+export type knowledgeCrawlLogData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: {
+        /**
+         * Status
+         */
+        status?: string | null;
+        /**
+         * Reason
+         */
+        reason?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/runs/{run_id}/crawl-log';
+};
+
+export type knowledgeCrawlLogErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeCrawlLogError = knowledgeCrawlLogErrors[keyof knowledgeCrawlLogErrors];
+
+export type knowledgeCrawlLogResponses = {
+    /**
+     * Successful Response
+     */
+    200: CrawlLogPublic;
+};
+
+export type knowledgeCrawlLogResponse = knowledgeCrawlLogResponses[keyof knowledgeCrawlLogResponses];
+
+export type brdListBrdData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/brd';
+};
+
+export type brdListBrdErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdListBrdError = brdListBrdErrors[keyof brdListBrdErrors];
+
+export type brdListBrdResponses = {
+    /**
+     * Response Brd-List Brd
+     *
+     * Successful Response
+     */
+    200: Array<BrdPublic>;
+};
+
+export type brdListBrdResponse = brdListBrdResponses[keyof brdListBrdResponses];
+
+export type brdUploadBrdData = {
+    body: Body_brd_upload_brd;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/brd';
+};
+
+export type brdUploadBrdErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdUploadBrdError = brdUploadBrdErrors[keyof brdUploadBrdErrors];
+
+export type brdUploadBrdResponses = {
+    /**
+     * Successful Response
+     */
+    200: BrdUploadResult;
+};
+
+export type brdUploadBrdResponse = brdUploadBrdResponses[keyof brdUploadBrdResponses];
+
+export type brdDeleteBrdData = {
+    body?: never;
+    path: {
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/api/v1/brd/{document_id}';
+};
+
+export type brdDeleteBrdErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdDeleteBrdError = brdDeleteBrdErrors[keyof brdDeleteBrdErrors];
+
+export type brdDeleteBrdResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type brdDeleteBrdResponse = brdDeleteBrdResponses[keyof brdDeleteBrdResponses];
+
+export type brdReadBrdData = {
+    body?: never;
+    path: {
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/api/v1/brd/{document_id}';
+};
+
+export type brdReadBrdErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdReadBrdError = brdReadBrdErrors[keyof brdReadBrdErrors];
+
+export type brdReadBrdResponses = {
+    /**
+     * Successful Response
+     */
+    200: BrdPublic;
+};
+
+export type brdReadBrdResponse = brdReadBrdResponses[keyof brdReadBrdResponses];
+
+export type brdListChunksData = {
+    body?: never;
+    path: {
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/brd/{document_id}/chunks';
+};
+
+export type brdListChunksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdListChunksError = brdListChunksErrors[keyof brdListChunksErrors];
+
+export type brdListChunksResponses = {
+    /**
+     * Response Brd-List Chunks
+     *
+     * Successful Response
+     */
+    200: Array<ChunkPublic>;
+};
+
+export type brdListChunksResponse = brdListChunksResponses[keyof brdListChunksResponses];
+
+export type brdReextractData = {
+    body?: never;
+    path: {
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/api/v1/brd/{document_id}/reextract';
+};
+
+export type brdReextractErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdReextractError = brdReextractErrors[keyof brdReextractErrors];
+
+export type brdReextractResponses = {
+    /**
+     * Successful Response
+     */
+    200: BrdUploadResult;
+};
+
+export type brdReextractResponse = brdReextractResponses[keyof brdReextractResponses];
+
+export type requirementsListRequirementsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Status
+         */
+        status?: string | null;
+        /**
+         * Type
+         */
+        type?: string | null;
+        /**
+         * Needs Decision
+         */
+        needs_decision?: boolean | null;
+        /**
+         * Document Id
+         */
+        document_id?: string | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/projects/{project_id}/requirements';
+};
+
+export type requirementsListRequirementsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsListRequirementsError = requirementsListRequirementsErrors[keyof requirementsListRequirementsErrors];
+
+export type requirementsListRequirementsResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementsPage;
+};
+
+export type requirementsListRequirementsResponse = requirementsListRequirementsResponses[keyof requirementsListRequirementsResponses];
+
+export type requirementsCreateRequirementData = {
+    body: RequirementCreate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirements';
+};
+
+export type requirementsCreateRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsCreateRequirementError = requirementsCreateRequirementErrors[keyof requirementsCreateRequirementErrors];
+
+export type requirementsCreateRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsCreateRequirementResponse = requirementsCreateRequirementResponses[keyof requirementsCreateRequirementResponses];
+
+export type requirementsRequirementsSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirements/summary';
+};
+
+export type requirementsRequirementsSummaryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsRequirementsSummaryError = requirementsRequirementsSummaryErrors[keyof requirementsRequirementsSummaryErrors];
+
+export type requirementsRequirementsSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementsSummary;
+};
+
+export type requirementsRequirementsSummaryResponse = requirementsRequirementsSummaryResponses[keyof requirementsRequirementsSummaryResponses];
+
+export type requirementsReadRequirementData = {
+    body?: never;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}';
+};
+
+export type requirementsReadRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsReadRequirementError = requirementsReadRequirementErrors[keyof requirementsReadRequirementErrors];
+
+export type requirementsReadRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementDetail;
+};
+
+export type requirementsReadRequirementResponse = requirementsReadRequirementResponses[keyof requirementsReadRequirementResponses];
+
+export type requirementsUpdateRequirementData = {
+    body: RequirementUpdate;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}';
+};
+
+export type requirementsUpdateRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsUpdateRequirementError = requirementsUpdateRequirementErrors[keyof requirementsUpdateRequirementErrors];
+
+export type requirementsUpdateRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsUpdateRequirementResponse = requirementsUpdateRequirementResponses[keyof requirementsUpdateRequirementResponses];
+
+export type requirementsApproveRequirementData = {
+    body?: never;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}/approve';
+};
+
+export type requirementsApproveRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsApproveRequirementError = requirementsApproveRequirementErrors[keyof requirementsApproveRequirementErrors];
+
+export type requirementsApproveRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsApproveRequirementResponse = requirementsApproveRequirementResponses[keyof requirementsApproveRequirementResponses];
+
+export type requirementsRejectRequirementData = {
+    body?: never;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}/reject';
+};
+
+export type requirementsRejectRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsRejectRequirementError = requirementsRejectRequirementErrors[keyof requirementsRejectRequirementErrors];
+
+export type requirementsRejectRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsRejectRequirementResponse = requirementsRejectRequirementResponses[keyof requirementsRejectRequirementResponses];
+
+export type requirementsAcceptWordingData = {
+    body?: never;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}/accept-wording';
+};
+
+export type requirementsAcceptWordingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsAcceptWordingError = requirementsAcceptWordingErrors[keyof requirementsAcceptWordingErrors];
+
+export type requirementsAcceptWordingResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsAcceptWordingResponse = requirementsAcceptWordingResponses[keyof requirementsAcceptWordingResponses];
+
+export type requirementsResetRequirementData = {
+    body?: never;
+    path: {
+        /**
+         * Requirement Id
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/requirements/{requirement_id}/reset';
+};
+
+export type requirementsResetRequirementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsResetRequirementError = requirementsResetRequirementErrors[keyof requirementsResetRequirementErrors];
+
+export type requirementsResetRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: RequirementPublic;
+};
+
+export type requirementsResetRequirementResponse = requirementsResetRequirementResponses[keyof requirementsResetRequirementResponses];
+
+export type requirementsBulkReviewData = {
+    body: BulkAction;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirements/bulk';
+};
+
+export type requirementsBulkReviewErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type requirementsBulkReviewError = requirementsBulkReviewErrors[keyof requirementsBulkReviewErrors];
+
+export type requirementsBulkReviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: BulkResult;
+};
+
+export type requirementsBulkReviewResponse = requirementsBulkReviewResponses[keyof requirementsBulkReviewResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

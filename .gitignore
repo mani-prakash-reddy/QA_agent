@@ -9,3 +9,7 @@ backend/app/frontend/
 .env
 problem_statement.md
 # dev_docs/
+
+# QA Agent runtime output (screenshots, uploads, exports)
+artifacts/
+backend/artifacts/

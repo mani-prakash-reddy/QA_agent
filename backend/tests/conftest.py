@@ -4,12 +4,17 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
 
-from app.core.config import settings
-from app.core.db import engine, init_db
-from app.main import app
-from app.models import Item, User
-from tests.utils.user import authentication_token_from_email
-from tests.utils.utils import get_superuser_token_headers
+from tests.test_database import use_test_database
+
+# Must run before app.core.db is imported: tests delete all users/items on teardown.
+TEST_DB_NAME = use_test_database()
+
+from app.core.config import settings  # noqa: E402
+from app.core.db import engine, init_db  # noqa: E402
+from app.main import app  # noqa: E402
+from app.models import Item, User  # noqa: E402
+from tests.utils.user import authentication_token_from_email  # noqa: E402
+from tests.utils.utils import get_superuser_token_headers  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)

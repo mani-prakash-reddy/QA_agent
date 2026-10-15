@@ -19,6 +19,17 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Variable not set}
       - POSTGRES_DB=app
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   adminer:
     image: adminer
     restart: unless-stopped
@@ -39,6 +50,8 @@ services:
       db:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy
     ports:
       - "8000:8000"
     # Run migrations + create the first superuser, then start the reloading dev server.
@@ -51,8 +64,15 @@ services:
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
       FRONTEND_HOST: http://localhost:5173
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      REDIS_URL: redis://redis:6379
+      ARTIFACT_DIR: /data/artifacts
+      # Encrypts role credentials at rest (Fernet key; see .env.example). Not an LLM secret.
+      CREDENTIAL_ENCRYPTION_KEY: ${CREDENTIAL_ENCRYPTION_KEY:-}
+      ALLOWED_TARGET_HOSTS: ${ALLOWED_TARGET_HOSTS:-localhost,127.0.0.1,frontend,juice-shop}
       # Email is disabled (no SMTP_HOST). To enable it, set SMTP_* and EMAILS_FROM_EMAIL here.
       SENTRY_DSN: ${SENTRY_DSN:-}
+    volumes:
+      - artifacts:/data/artifacts
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
@@ -70,6 +90,53 @@ services:
         - path: ./backend/tests
           action: sync
           target: /app/backend/tests
+          ignore:
+            - __pycache__
+        - path: ./backend/pyproject.toml
+          action: rebuild
+        - path: ./uv.lock
+          action: rebuild
+
+  # Runs agent runs (LangGraph + Playwright). Holds the LLM keys; the API does not.
+  # Scale with `docker compose up --scale worker=N`.
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: arq app.qa.jobs.worker.WorkerSettings
+    volumes:
+      - artifacts:/data/artifacts
+    environment:
+      FASTAPI_ENV: development
+      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+      SECRET_KEY: ${SECRET_KEY:?Variable not set}
+      FIRST_SUPERUSER: ${FIRST_SUPERUSER:?Variable not set}
+      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      REDIS_URL: redis://redis:6379
+      ARTIFACT_DIR: /data/artifacts
+      CREDENTIAL_ENCRYPTION_KEY: ${CREDENTIAL_ENCRYPTION_KEY:-}
+      ALLOWED_TARGET_HOSTS: ${ALLOWED_TARGET_HOSTS:-localhost,127.0.0.1,frontend,juice-shop}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-oss-120b}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-openai/gpt-oss-20b}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-liquid/lfm-2.5-embedding-350m:free}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-1024}
+    develop:
+      watch:
+        - path: ./backend/app
+          action: sync+restart
+          target: /app/backend/app
           ignore:
             - __pycache__
         - path: ./backend/pyproject.toml
@@ -129,5 +196,16 @@ services:
     ports:
       - 9323:9323
 
+  # --- Demo / test target applications (never started by default) ---
+  # `docker compose --profile demo-juice up -d juice-shop`
+  # Intentionally vulnerable app: keep it on the compose network / localhost only.
+  juice-shop:
+    profiles: [demo-juice]
+    image: bkimminich/juice-shop
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+
 volumes:
   app-db-data:
+  artifacts:

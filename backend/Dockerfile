@@ -67,6 +67,11 @@ COPY ./backend/tests /app/backend/tests
 RUN mkdir -p app/frontend
 CMD ["fastapi", "dev", "--host", "0.0.0.0"]
 
+# Worker image: the dev image plus a browser for the crawler.
+FROM dev AS worker
+RUN playwright install --with-deps chromium
+CMD ["arq", "app.qa.jobs.worker.WorkerSettings"]
+
 # Production image: serves the built frontend from FastAPI.
 FROM backend AS production
 

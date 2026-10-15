@@ -27,7 +27,7 @@ SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 
-def get_current_user(session: SessionDep, token: TokenDep) -> User:
+def authenticate_token(session: Session, token: str) -> User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
@@ -44,6 +44,10 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
+
+
+def get_current_user(session: SessionDep, token: TokenDep) -> User:
+    return authenticate_token(session, token)
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]

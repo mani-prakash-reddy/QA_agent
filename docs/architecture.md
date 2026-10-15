@@ -37,7 +37,7 @@ Three properties drive every design decision:
                               │ Worker (arq)      │──────────┘
                               │ LangGraph agents  │
                               │ Playwright        │── HTTPS ──► Application under test (staging)
-                              │ Tool gate         │── HTTPS ──► LLM (OpenRouter / self-hosted)
+                              │ Tool gate         │── HTTPS ──► LLM (Groq / OpenRouter / self-hosted)
                               └───────────────────┘
 ```
 
@@ -132,7 +132,7 @@ A sitemap is optional and rarely useful for authenticated SPAs. Discovery merges
 
 | Agent / call | Strategy |
 |---|---|
-| **Requirement extraction** | Per-section prompts; Pydantic structured output; must quote the source text for each requirement; explicit instruction to *flag, not guess* vague items; a heuristic pre-pass supplies ambiguity hints. |
+| **Requirement extraction** | One structured-output call per section (prompt `extract-v2`, temperature 0). Each requirement must include a verbatim quote, which code **verifies against the section text**: a near-miss is replaced by the document's own sentence and anything else is discarded, so an invented requirement cannot be stored. Scope/background statements are excluded by instruction. Vague or incomplete wording is *flagged, not guessed*: deterministic wording checks (vague terms, TBD, unmeasurable targets) are merged with the model's own judgement, and a flagged requirement needs a human decision before it can be approved or used for test generation. |
 | **Supervisor** | Fixed base prompt (mission, safety, tool semantics) + project context summary. Reasons in plan → spawn → review loops with coverage stats as feedback. |
 | **Explorer** | Fixed base prompt + supervisor's goal text + scope. Observation = compact accessibility snapshot with opaque element handles, never raw HTML. Told to stop on no-new-state streaks. |
 | **Mapping judge** | Receives one requirement and *only* retrieved candidate states; must return state ids from that set with a confidence and a rationale citing element labels. |
@@ -154,8 +154,9 @@ A sitemap is optional and rarely useful for authenticated SPAs. Discovery merges
 ## 10. Security and privacy
 
 - **Credentials:** encrypted at rest (Fernet; key from environment/secret manager), decrypted only inside the worker's auth module. Never logged, never in prompts, never in screenshots' captions or the KM. Generated tests use placeholders such as `<ADMIN_PASSWORD>`. A test asserts known secrets never appear in outgoing LLM payloads.
-- **Confidentiality of BRD and app data:** BRD text and page structure *do* go to the LLM. Mitigations: provider routing restricted to no-retention/no-training providers; PII masking option; minimal context per call (element catalogs, not full pages).
-- **LLM choice (justification):** OpenRouter provides model choice and cost reporting behind one OpenAI-compatible API, which suits a build with different models per agent role. Because the integration is a base URL + key, the identical code runs against a **self-hosted** OpenAI-compatible server (vLLM/Ollama) for confidential deployments, with local embeddings. The documented trade-off: smaller self-hosted models reduce extraction, mapping and tool-use quality; the deterministic explorer and rule-based generators keep the system useful in that mode.
+- **Confidentiality of BRD and app data:** BRD text and page structure *do* go to the LLM and the embedding endpoint. Mitigations: provider routing restricted to no-retention/no-training providers for confidential projects; PII masking option; minimal context per call (element catalogs, not full pages).
+- **LLM choice (justification):** the chat models are Groq-hosted `gpt-oss-120b` (planning, authoring, extraction) and `gpt-oss-20b` (high-volume exploration steps), chosen after measurement: 0.5–1.3 s per call, correct tool calling, strict JSON-schema output, and generous rate limits — fast enough for multi-agent runs, which free-tier models (~10 s/call) were not. Chat and embeddings are separate OpenAI-compatible endpoints, so the identical code runs against a **self-hosted** server (vLLM/Ollama) for confidential deployments, including embeddings. The documented trade-off: smaller self-hosted models reduce extraction, mapping and tool-use quality; the deterministic explorer and rule-based generators keep the system useful in that mode.
+- **Free models and confidentiality:** free-tier models cannot honor no-retention/no-training routing (verified), so they are suitable only for demo applications and non-confidential BRDs. A project marked `confidential` forces strict provider routing and refuses free models; for genuinely sensitive material use a paid zero-retention route or a self-hosted model (chat and embeddings).
 - **Environment safety:** the app URL must be a test/staging environment; a project-level acknowledgement is required, and safe mode is on by default.
 
 ## 11. Configuration
@@ -175,11 +176,11 @@ Per project: crawl depth, state/step budgets, include/exclude modules and URL gl
 | Backend | FastAPI, SQLModel, Alembic | Already in the repo template. |
 | Database | PostgreSQL 18 + Apache AGE + pgvector | Already provisioned; one store covers relational, graph and vector needs. |
 | Agent framework | LangChain + LangGraph | Fits supervisor/sub-agent graphs, parallel fan-out (`Send`), human interrupts, Postgres checkpointing. |
-| LLM access | `langchain-openai` against OpenRouter | OpenAI-compatible; swap to self-hosted by changing base URL. |
+| LLM access | `langchain-openai` against Groq (chat) and OpenRouter (embeddings) | OpenAI-compatible; swap either to self-hosted by changing its base URL. |
 | Browser automation | Playwright | Reliable SPA handling, accessibility snapshots, request interception, multi-context. |
 | Queue / events | Redis + arq | Async-native, fits Playwright/FastAPI; Streams give ordered live events with replay. |
 | Live transport | Server-Sent Events + REST commands | Simple, proxy-friendly; controls don't need a socket. |
-| Embeddings | Local sentence-transformers model | Keeps BRD/app text off the network for retrieval; dimension fixed in schema. |
+| Embeddings | OpenRouter embedding models, 1024-d (default a free 350M model; paid option available) | No heavy local ML stack; 1024-d fits pgvector's HNSW limit. A self-hosted OpenAI-compatible embedding server can replace it for confidential deployments. |
 | BRD parsing | Docling (fallback PyMuPDF/python-docx) | Structure and table preservation. |
 | Frontend | React, TanStack Router/Query, Tailwind, shadcn/ui | Already in the repo template. |
 | Exports | `openpyxl`, `csv`, JSON | No framework required. |
