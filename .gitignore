@@ -8,3 +8,4 @@ backend/app/frontend/
 /playwright/.cache/
 .env
 problem_statement.md
+# dev_docs/
