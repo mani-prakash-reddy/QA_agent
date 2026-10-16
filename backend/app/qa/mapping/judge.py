@@ -127,9 +127,13 @@ async def judge(
     candidates: list[Candidate],
     *,
     second_look: bool = False,
+    context: str = "",
 ) -> JudgeResult:
     structured = model.with_structured_output(JudgeResult)
     messages = build_messages(key, rtype, title, description, criteria, candidates)
+    if context:  # the business glossary terms used in the requirement
+        role, text = messages[-1]
+        messages[-1] = (role, text + context)
     if second_look:
         messages.append(SECOND_LOOK)
     result = await structured.ainvoke(messages)

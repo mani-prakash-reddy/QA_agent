@@ -41,6 +41,7 @@ from app.qa.models import (
     TestCaseVersion,
     UiState,
 )
+from app.qa.reference.load import load_refs, load_refs_sync
 from app.qa.runs.context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,9 @@ class ReqPlan:
     cards: list[ScreenCard]
     rule_drafts: list[CaseDraft] = field(default_factory=list)
     rule_clipped: int = 0
+    access_only: bool = (
+        False  # an access-rights requirement: no field tests of the screens it maps to
+    )
 
 
 @dataclass
@@ -80,6 +84,10 @@ def latest_mapped_snapshot(project_id: uuid.UUID) -> uuid.UUID | None:
         ).first()
 
 
+FORM_CONFIDENCE = 0.75  # mapping confidence needed to write field tests for a screen
+ACCESS_RE = re.compile(r"\b(access|permissions?|privileges?|roles?|rights)\b", re.I)
+
+
 def _prepare(
     project_id: uuid.UUID,
     snapshot_id: uuid.UUID,
@@ -88,6 +96,7 @@ def _prepare(
     only: set[uuid.UUID] | None,
 ) -> Plan:
     with Session(engine) as s:
+        refs = load_refs(s, project_id)
         reqs = list(
             s.exec(
                 select(Requirement)
@@ -165,11 +174,35 @@ def _prepare(
                 )
                 continue
             plan = ReqPlan(r, mcards)
-            rep_ids = [c.state_id for c in mcards]
+            # Field tests are written only for screens the requirement is *confidently* about: a weak link
+            # (50-75%, not confirmed by a person) would hang another feature's field rules on it.
+            solid = {
+                mp.state_id
+                for mp in mine
+                if mp.confidence >= FORM_CONFIDENCE or mp.review_status == "confirmed"
+            }
+            rep_ids = [c.state_id for c in mcards if c.state_id in solid]
             destructive = {d for c in mcards for d in c.destructive}
             drafts: list[CaseDraft] = []
-            found_forms, lost = forms_for_states(s, snapshot_id, rep_ids, planner)
+            # An access-rights requirement ("Clerk limited access") maps to every screen the role sees; field
+            # tests of those screens belong to the requirements about the forms, not to this one.
+            access_req = bool(ACCESS_RE.search(r.title)) and (
+                r.key_origin != "brd" or len(mcards) > 3
+            )
+            found_forms, lost = (
+                ([], 0)
+                if access_req
+                else forms_for_states(s, snapshot_id, rep_ids, planner)
+            )
+            plan.access_only = access_req
             unreachable += lost
+            for fctx in (
+                found_forms
+            ):  # rules the API specification adds to what the screen shows
+                fctx.fields, fctx.api_source = refs.enrich(
+                    fctx.fields,
+                    f"{r.title} {r.description} {fctx.parent_title} {fctx.state.title or ''}",
+                )
             for ctx in found_forms:
                 rids = access.visible.get(ctx.state.id) or access.visible.get(
                     ctx.parent_state_id, set()
@@ -321,6 +354,7 @@ async def run_generate(rc: RunContext) -> dict[str, Any]:
         if cfg_in.get("requirement_ids")
         else None
     )
+    refs = await asyncio.to_thread(load_refs_sync, project_id)
     spec = AgentSpec(kind="test_author", goal="Generate grounded test cases")
     await events.emit("agent_spawned", agent_id=agent_id, spec=spec.model_dump())
     await events.emit("agent_status", agent_id=agent_id, status="running")
@@ -410,6 +444,11 @@ async def run_generate(rc: RunContext) -> dict[str, Any]:
                             cfg.llm_cases_per_requirement,
                             feedback,
                             str(cfg_in.get("feedback") or ""),
+                            refs.glossary_block(f"{r.title} {r.description}")
+                            + refs.api_block(
+                                f"{r.title} {r.description} "
+                                + " ".join(sorted({x for c in cards for x in c.labels}))
+                            ),
                         )
                     except Exception as exc:
                         stats["author_failed"] += 1

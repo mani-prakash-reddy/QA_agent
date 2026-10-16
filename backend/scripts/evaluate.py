@@ -10,6 +10,7 @@ a replay result (scripts/replay_cases.py output), a mapping gold file, and a fil
 only reported when a rated sheet is supplied."""
 
 import argparse
+import asyncio
 import csv
 import json
 import random
@@ -19,6 +20,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from pydantic import BaseModel, Field
 from sqlmodel import Session, col, select
 
 from app.core.db import engine
@@ -73,8 +75,47 @@ def known_labels(session: Session, snapshot_id: Any) -> set[str]:
     return labels
 
 
+RUBRIC = """You are a senior QA lead reviewing generated test cases for a business analyst. For each case, given the
+requirement it covers, rate 1-5 how USEFUL it is to the team:
+5 = clearly tests the requirement with specific steps and a precise, checkable expected result;
+4 = useful, small gaps; 3 = acceptable but vague or partly redundant; 2 = weak or only loosely related;
+1 = trivial, wrong or meaningless. Judge only what is written. Answer with the score and one short reason."""
+
+
+class Rating(BaseModel):
+    score: int = Field(ge=1, le=5)
+    reason: str = ""
+
+
+async def judge_cases(items: list[tuple[str, str]]) -> list[Rating]:
+    """Rate (requirement text, case text) pairs with the strong model. An automated PROXY for a QA rating."""
+    from app.qa.llm.gateway import get_chat_model
+
+    model = get_chat_model("mapper").with_structured_output(Rating)
+    sem = asyncio.Semaphore(4)
+
+    async def one(req: str, case: str) -> Rating:
+        async with sem:
+            try:
+                out = await model.ainvoke(
+                    [
+                        ("system", RUBRIC),
+                        ("user", f"Requirement:\n{req}\n\nTest case:\n{case}"),
+                    ]
+                )
+                return out if isinstance(out, Rating) else Rating.model_validate(out)
+            except Exception:
+                return Rating(score=3, reason="the judge could not answer")
+
+    return list(await asyncio.gather(*(one(r, c) for r, c in items)))
+
+
 def evaluate(
-    name: str, replay: str | None, ratings: str | None, sheet: str | None
+    name: str,
+    replay: str | None,
+    ratings: str | None,
+    sheet: str | None,
+    judge: bool = False,
 ) -> dict[str, Any]:
     with Session(engine) as s:
         p = s.exec(select(Project).where(Project.name == name)).one()
@@ -254,6 +295,46 @@ def evaluate(
                         ]
                     )
             out["rating_sheet"] = {"path": sheet, "cases": len(pick)}
+        if judge and cases:
+            if not sheet:  # the same stratified sample the sheet would hold
+                rnd = random.Random(11)
+                groups2: dict[str, list[TestCase]] = {}
+                for t in cases:
+                    groups2.setdefault(t.test_type, []).append(t)
+                pick = []
+                while len(pick) < min(30, len(cases)):
+                    for g in groups2.values():
+                        if g and len(pick) < 30:
+                            pick.append(g.pop(rnd.randrange(len(g))))
+                    if not any(groups2.values()):
+                        break
+                req_by_id = {r.id: r for r in reqs}
+            items = [
+                (
+                    f"{req_by_id[t.requirement_id].req_key}: {req_by_id[t.requirement_id].title}. {req_by_id[t.requirement_id].description}",
+                    f"{t.title}\nPreconditions: {'; '.join(map(str, t.preconditions))}\nSteps: {' / '.join(map(str, t.rendered_steps))}\nExpected: {t.expected_result}",
+                )
+                for t in pick
+            ]
+            rated = asyncio.run(judge_cases(items))
+            scores = [r.score for r in rated]
+            out["business_relevance_proxy"] = {
+                "note": "Scored by an AI model with a QA-lead rubric. A proxy: it is NOT a human QA rating.",
+                "rated": len(scores),
+                "mean": round(sum(scores) / len(scores), 2) if scores else None,
+                "distribution": {str(k): scores.count(k) for k in range(1, 6)},
+                "lowest": [
+                    {
+                        "case": t.tc_key,
+                        "title": t.title,
+                        "score": r.score,
+                        "reason": r.reason,
+                    }
+                    for t, r in sorted(
+                        zip(pick, rated, strict=False), key=lambda x: x[1].score
+                    )[:5]
+                ],
+            }
         if ratings:
             rows = list(csv.DictReader(open(ratings, encoding="utf-8-sig")))
             vals = [
@@ -274,10 +355,17 @@ if __name__ == "__main__":
     ap.add_argument("--replay")
     ap.add_argument("--ratings")
     ap.add_argument("--sheet")
+    ap.add_argument(
+        "--judge",
+        action="store_true",
+        help="rate the sample with an AI model (a proxy, not a human rating)",
+    )
     a = ap.parse_args()
     sys.stdout.write(
         json.dumps(
-            evaluate(a.project, a.replay, a.ratings, a.sheet), indent=2, default=str
+            evaluate(a.project, a.replay, a.ratings, a.sheet, a.judge),
+            indent=2,
+            default=str,
         )
         + "\n"
     )

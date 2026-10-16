@@ -201,7 +201,7 @@ export function ModelPanel({
                   <TableCell>
                     <Badge variant="secondary">{s.kind}</Badge>
                   </TableCell>
-                  <TableCell>{s.module ?? "—"}</TableCell>
+                  <TableCell>{s.module ?? "-"}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {s.route_template}
                   </TableCell>
@@ -250,7 +250,7 @@ export function ModelPanel({
                       ({row.kind})
                     </span>
                   </TableCell>
-                  <TableCell>{row.module ?? "—"}</TableCell>
+                  <TableCell>{row.module ?? "-"}</TableCell>
                   {matrix.roles.map((r) => (
                     <TableCell key={r} className="text-center">
                       {row.access[r] ? (
@@ -270,7 +270,7 @@ export function ModelPanel({
                           className="text-muted-foreground"
                           title="not observed"
                         >
-                          —
+                          -
                         </span>
                       )}
                     </TableCell>
@@ -282,7 +282,7 @@ export function ModelPanel({
           <p className="p-3 text-xs text-muted-foreground">
             Based on what each role's crawl reached. A red word (forbidden,
             redirected, not found) was observed by opening the screen by address
-            as that role; “—” means not observed, not proven forbidden.
+            as that role; “-” means not observed, not proven forbidden.
           </p>
         </div>
       )}

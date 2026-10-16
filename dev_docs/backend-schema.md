@@ -1,4 +1,4 @@
-# Backend Schema — where data lives
+# Backend Schema - where data lives
 
 | | |
 |---|---|
@@ -11,8 +11,8 @@
 |---|---|---|
 | Users, projects, roles, requirements, KM, tests, runs, metrics | PostgreSQL relational tables (+JSONB) | Source of truth, transactional |
 | Navigation/workflow/permission graph | Apache AGE graph `qa_kg` | Path and traversal queries; **derived** from relational tables, rebuildable |
-| Requirement & state embeddings, test dedup vectors | pgvector columns (384-d) | Mapping retrieval and dedup |
-| LangGraph run state | Postgres tables created by `langgraph-checkpoint-postgres` (schema `langgraph`) | Resumable runs; excluded from Alembic autogenerate |
+| Requirement & state embeddings, test dedup vectors | pgvector columns (1024-d) | Mapping retrieval and dedup |
+| LangGraph run state | Tables `checkpoints`, `checkpoint_blobs`, `checkpoint_writes`, `checkpoint_migrations` created by `langgraph-checkpoint-postgres` in schema `public` (verified in M0) | Resumable runs; excluded from Alembic autogenerate |
 | Live agent events | Redis Stream `run:{id}:events` (+ persisted copy in `agent_event`) | Fan-out to UI; replay |
 | Job queue, state claims, control flags | Redis (arq keys, `claim:*`, pub/sub `run:{id}:control`) | Ephemeral coordination |
 | BRD files, screenshots, exports | Artifact store (`/data/artifacts/...`, S3-ready interface); paths in DB | Large binaries stay out of Postgres |
@@ -41,7 +41,7 @@ user ─< project ─< app_role ─1 role_credential
 
 ## 3. Tables
 
-Types: `uuid`, `text`, `int`, `bool`, `ts` = `timestamptz`, `jsonb`, `vec` = `vector(384)`.
+Types: `uuid`, `text`, `int`, `bool`, `ts` = `timestamptz`, `jsonb`, `vec` = `vector(1024)`. Every table with a `vec` column also stores `embedding_model text` (vectors from different models are not comparable).
 
 ### 3.1 Tenancy and configuration
 
@@ -54,12 +54,13 @@ Types: `uuid`, `text`, `int`, `bool`, `ts` = `timestamptz`, `jsonb`, `vec` = `ve
 | description | text null | |
 | target_base_url | text | staging only |
 | environment_ack | bool | user confirmed non-production |
+| confidential | bool | true → strict provider routing, free models refused (TRD §5, D12) |
 | crawl_config | jsonb | `CrawlConfig` |
 | generation_config | jsonb | `GenerationConfig` incl. template |
 | budget_caps | jsonb | `BudgetCaps` |
 | created_at / updated_at | ts | |
 
-**app_role** — a user role *of the application under test*
+**app_role** - a user role *of the application under test*
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
@@ -137,7 +138,7 @@ id bigserial, run_id, agent_id, role_id, ts, url text null, action text null, el
 
 **app_snapshot**: id, project_id, run_id (producing run), status (`building|ready|failed`), roles_covered jsonb, stats jsonb (states, forms, fields, transitions), graph_projected bool, created_at, stale_after ts.
 
-**ui_state** — a screen/overlay/tab/wizard-step
+**ui_state** - a screen/overlay/tab/wizard-step
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
@@ -175,11 +176,15 @@ id, form_id, element_id, ordinal, label, input_type, required bool, min_length, 
 
 ### 3.5 Mapping and gaps
 
-**requirement_mapping**: id, requirement_id, snapshot_id, state_id, confidence real, rationale text, citations jsonb (element/state labels), method (`retrieval+judge|manual`), review_status (`proposed|confirmed|rejected`), judged_by_agent uuid null; unique (requirement_id, snapshot_id, state_id).
+**requirement_mapping** (implemented, migration `e5f6a7b8c9d0`): id, project_id, requirement_id, snapshot_id, state_id (the group's representative screen), confidence float, rationale text, citations jsonb (`[{"label"}]`, each verified to exist on the screen), retrieval_score, method (`judge|manual`), review_status (`proposed|confirmed|rejected`), run_id, created_at, updated_at; unique (requirement_id, snapshot_id, state_id).
 
-**gap**: id, project_id, run_id, snapshot_id, direction (`requirement_unmatched|feature_unmentioned`), requirement_id null, state_id null, reason text, severity (`low|medium|high`), status (`open|accepted|resolved`).
+`ui_state` also gained `embedding vector(1024)` + `embedding_model` (a cache of the screen-card vector; no ANN index, search is exact per snapshot).
+
+**gap** (implemented): id, project_id, snapshot_id, run_id, direction (`requirement_unmatched|feature_unmentioned`), requirement_id null, state_id null, code (`judged_absent|no_candidate|not_ui_observable|not_assessed|undocumented_screen`), reason text, evidence jsonb (nearest screens, route, variants), severity (`low|medium|high`), status (`open|accepted|resolved`), created_at. Rows are re-derived from the effective mappings after every run and every human decision.
 
 ### 3.6 Test cases
+
+> **M7 implementation notes.** `test_case` (migration `f6a7b8c9d0e1`) and `test_case_version` (M8, `a7b8c9d0e1f2`: version, content snapshot of the editable fields, change_type `generated|edited|regenerated`, change_note, changed_by) exist. `test_case_requirement` and the `export` table were **not** built: extra requirements live in `evidence.also_covers` and exports are generated on request. Differences from the design: `state_id`, `role_name`, `evidence jsonb` (`basis: observed|inferred|requirement|not_observed`, `rule`, `field`, `also_covers[]` = other requirements an identical case covers, `needs_rows`), `status` also allows `edited`, `test_data` is a list of `{field, value, kind}` (never a credential: passwords are `<valid password>` placeholders), `embedding` is filled when the embedding service is reachable. Priority scale is P1–P4.
 
 **test_case**
 | Column | Type | Notes |
@@ -207,7 +212,7 @@ id, form_id, element_id, ordinal, label, input_type, required bool, min_length, 
 | created_by_run | uuid FK null | |
 | created_at / updated_at | ts | |
 
-**test_case_requirement**: test_case_id, requirement_id, PK both — additional requirements covered (RTM counts both primary and linked).
+**test_case_requirement**: test_case_id, requirement_id, PK both - additional requirements covered (RTM counts both primary and linked).
 **test_case_version**: id, test_case_id, version, content jsonb (full snapshot of editable fields), change_type (`generated|edited|regenerated|status`), change_note text, changed_by user null, created_at.
 
 ### 3.7 Outputs
@@ -216,7 +221,11 @@ id, form_id, element_id, ordinal, label, input_type, required bool, min_length, 
 
 RTM, coverage and cost dashboards are **queries/views**, not stored tables.
 
-## 4. Graph (Apache AGE) — `qa_kg`
+> **M3 implementation notes.** Created as designed: `app_snapshot`, `ui_state`, `ui_element`, `form`, `form_field`, `transition`, `role_state_access`. Differences: elements carry a stable `key` (`kind|label|region[/row]|nth`) instead of per-snapshot handles; `ui_state` has `heading`, `depth`, `discovery_source`; `form_field.validation_messages` entries are `{trigger, message, source(app|native)}`; embedding columns, `observed_endpoint` and `role_element_visibility` arrive in M4/M5. Event `parent_id` is persisted inside `agent_event.payload`.
+
+> **M2 implementation notes.** `brd_document`, `brd_chunk`, `requirement` exist as designed, with these differences: `requirement.ambiguity_resolved` (a human accepted the wording), `ambiguity_reasons[]` entries are `{source: heuristic|llm, reason, severity: blocking|info}` (only `blocking` sets `ambiguity_flag`), `key_origin` also allows `manual`, `source_anchor` is `{chunk_id, section, page, quote}`, `brd_document` tracks `status/chunk_count/requirement_count/error/run_id` and is unique per `(project_id, sha256)`. `requirement.embedding` is `vector(1024)` with an HNSW cosine index; `brd_chunk` has no embedding yet. Original files live at `ARTIFACT_DIR/{project}/brd/{document}/original.<ext>`.
+
+## 4. Graph (Apache AGE) - `qa_kg`
 
 | Node label | Properties |
 |---|---|
@@ -245,7 +254,7 @@ Projection is idempotent: delete + rebuild per snapshot from relational tables. 
 | `brd_chunk.embedding` | optional context retrieval for authoring |
 | `test_case.embedding` | semantic dedup |
 
-Index: HNSW with cosine ops on each. Dimension 384 (`BAAI/bge-small-en-v1.5`); changing models requires migration + re-embedding.
+Index: HNSW with cosine ops on each. Dimension 1024 (default `liquid/lfm-2.5-embedding-350m:free`; alternative `voyageai/voyage-4`). pgvector's HNSW limit is 2000 dims (verified), so 2048-d models are excluded. Switching model = re-embed + update `embedding_model`.
 
 ## 6. Redis keyspace
 
@@ -287,7 +296,7 @@ Index: HNSW with cosine ops on each. Dimension 384 (`BAAI/bge-small-en-v1.5`); c
 7. `qa_graph`: `create_graph('qa_kg')` and labels
 8. Vector indexes (after tables)
 
-The existing `a1b2c3d4e5f6` migration already enables `vector` and `age`. Alembic `env.py` must exclude the `langgraph` schema from autogenerate.
+The existing `a1b2c3d4e5f6` migration already enables `vector` and `age`. Alembic `env.py` must exclude the `checkpoint*` tables from autogenerate (they live in `public`).
 
 ## 10. Data lifecycle and privacy
 

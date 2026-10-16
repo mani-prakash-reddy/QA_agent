@@ -84,6 +84,7 @@ def build_messages(
     limit: int,
     feedback: str = "",
     reviewer_note: str = "",
+    context: str = "",
 ) -> list[tuple[str, str]]:
     crit = (
         "Acceptance criteria:\n" + "\n".join(f"- {c}" for c in criteria)
@@ -113,7 +114,8 @@ def build_messages(
                 )
                 if reviewer_note
                 else "",
-            ),
+            )
+            + context,
         ),
     ]
 
@@ -130,6 +132,7 @@ async def author(
     limit: int,
     feedback: str = "",
     reviewer_note: str = "",
+    context: str = "",
 ) -> AuthorResult:
     structured = model.with_structured_output(AuthorResult)
     result = await structured.ainvoke(
@@ -144,6 +147,7 @@ async def author(
             limit,
             feedback,
             reviewer_note,
+            context,
         )
     )
     return (

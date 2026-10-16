@@ -53,3 +53,21 @@ class TestCaseExternal(SQLModel, table=True):
     external_url: str = Field(default="", max_length=1000)
     content_hash: str = Field(default="", max_length=64)
     pushed_at: datetime = ts_field()
+
+
+class ProjectReference(SQLModel, table=True):
+    """A reference document the user supplied besides the BRD: a business glossary or an API specification."""
+
+    __tablename__ = "project_reference"
+    __table_args__ = (UniqueConstraint("project_id", "sha256"),)
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    project_id: uuid.UUID = Field(
+        foreign_key="project.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    kind: str = Field(max_length=20)  # glossary | api
+    filename: str = Field(max_length=300)
+    sha256: str = Field(max_length=64)
+    # glossary: {"terms": [...]}   api: {"title", "version", "operations": [...]}
+    data: dict[str, Any] = jsonb(dict)
+    created_at: datetime = ts_field()

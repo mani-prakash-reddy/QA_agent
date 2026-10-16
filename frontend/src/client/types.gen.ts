@@ -51,6 +51,32 @@ export type AgentPublic = {
 };
 
 /**
+ * ApiOperation
+ */
+export type ApiOperation = {
+    /**
+     * Method
+     */
+    method: string;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Fields
+     */
+    fields: Array<string>;
+    /**
+     * Related Requirements
+     */
+    related_requirements: Array<string>;
+};
+
+/**
  * Body_brd-upload_brd
  */
 export type Body_brd_upload_brd = {
@@ -90,6 +116,22 @@ export type Body_login_login_access_token = {
      * Client Secret
      */
     client_secret?: string | null;
+};
+
+/**
+ * Body_references-add_reference
+ */
+export type Body_references_add_reference = {
+    /**
+     * Kind
+     */
+    kind: 'glossary' | 'api';
+    /**
+     * File
+     *
+     * Glossary (CSV, JSON, Markdown, text) or OpenAPI/Swagger (JSON, YAML)
+     */
+    file: Blob | File;
 };
 
 /**
@@ -395,6 +437,10 @@ export type CrawlConfig = {
      * Probe Forbidden Routes
      */
     probe_forbidden_routes?: boolean;
+    /**
+     * Walk Wizards
+     */
+    walk_wizards?: boolean;
     /**
      * Max Modules
      */
@@ -1038,6 +1084,10 @@ export type KindMetric = {
      * Output Tokens
      */
     output_tokens: number;
+    /**
+     * Cost Usd
+     */
+    cost_usd?: number;
 };
 
 /**
@@ -1242,6 +1292,18 @@ export type MetricsPublic = {
      * Output Tokens
      */
     output_tokens: number;
+    /**
+     * Price Input Per M
+     */
+    price_input_per_m?: number;
+    /**
+     * Price Output Per M
+     */
+    price_output_per_m?: number;
+    /**
+     * Cost Usd
+     */
+    cost_usd?: number;
 };
 
 /**
@@ -1327,7 +1389,7 @@ export type ProjectCreate = {
     /**
      * Environment Ack
      */
-    environment_ack: boolean;
+    environment_ack?: boolean;
     /**
      * Confidential
      */
@@ -1598,6 +1660,72 @@ export type RecentRun = {
      * Partial
      */
     partial: boolean;
+};
+
+/**
+ * ReferenceDetail
+ */
+export type ReferenceDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Terms
+     */
+    terms?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Operations
+     */
+    operations?: Array<ApiOperation>;
+    /**
+     * Unreferenced Operations
+     */
+    unreferenced_operations?: number;
+};
+
+/**
+ * ReferencePublic
+ */
+export type ReferencePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Summary
+     */
+    summary: string;
 };
 
 /**
@@ -2129,6 +2257,10 @@ export type RunMetric = {
      * Created At
      */
     created_at: string;
+    /**
+     * Cost Usd
+     */
+    cost_usd?: number;
 };
 
 /**
@@ -4098,6 +4230,128 @@ export type integrationsPushedResponses = {
 };
 
 export type integrationsPushedResponse = integrationsPushedResponses[keyof integrationsPushedResponses];
+
+export type referencesListReferencesData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/references';
+};
+
+export type referencesListReferencesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type referencesListReferencesError = referencesListReferencesErrors[keyof referencesListReferencesErrors];
+
+export type referencesListReferencesResponses = {
+    /**
+     * Response References-List References
+     *
+     * Successful Response
+     */
+    200: Array<ReferencePublic>;
+};
+
+export type referencesListReferencesResponse = referencesListReferencesResponses[keyof referencesListReferencesResponses];
+
+export type referencesAddReferenceData = {
+    body: Body_references_add_reference;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/references';
+};
+
+export type referencesAddReferenceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type referencesAddReferenceError = referencesAddReferenceErrors[keyof referencesAddReferenceErrors];
+
+export type referencesAddReferenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReferencePublic;
+};
+
+export type referencesAddReferenceResponse = referencesAddReferenceResponses[keyof referencesAddReferenceResponses];
+
+export type referencesDeleteReferenceData = {
+    body?: never;
+    path: {
+        /**
+         * Reference Id
+         */
+        reference_id: string;
+    };
+    query?: never;
+    url: '/api/v1/references/{reference_id}';
+};
+
+export type referencesDeleteReferenceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type referencesDeleteReferenceError = referencesDeleteReferenceErrors[keyof referencesDeleteReferenceErrors];
+
+export type referencesDeleteReferenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type referencesDeleteReferenceResponse = referencesDeleteReferenceResponses[keyof referencesDeleteReferenceResponses];
+
+export type referencesReadReferenceData = {
+    body?: never;
+    path: {
+        /**
+         * Reference Id
+         */
+        reference_id: string;
+    };
+    query?: never;
+    url: '/api/v1/references/{reference_id}';
+};
+
+export type referencesReadReferenceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type referencesReadReferenceError = referencesReadReferenceErrors[keyof referencesReadReferenceErrors];
+
+export type referencesReadReferenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReferenceDetail;
+};
+
+export type referencesReadReferenceResponse = referencesReadReferenceResponses[keyof referencesReadReferenceResponses];
 
 export type runsListRunsData = {
     body?: never;

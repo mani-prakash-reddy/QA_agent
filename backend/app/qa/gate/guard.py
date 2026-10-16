@@ -60,6 +60,9 @@ class RequestGuard:
         app_origin: str | None = None,
     ) -> None:
         self.armed = False
+        # While a multi-step form's "Next" is pressed, same-origin writes are let through: the step only
+        # carries the form to the next screen (opt-in: CrawlConfig.walk_wizards)
+        self.advancing = False
         self._on_block = on_block
         self._safe = [
             re.compile(p)
@@ -78,6 +81,10 @@ class RequestGuard:
             return None
         if any(p.search(request.url) for p in self._safe):
             return None  # an explicit allow (project config or a known realtime transport) wins
+        if self.advancing and (
+            not self._origin or urlsplit(request.url).netloc == self._origin
+        ):
+            return None
         if self._origin and urlsplit(request.url).netloc != self._origin:
             # Not the application under test (analytics, third-party widgets): never let a crawl
             # write to other systems either.

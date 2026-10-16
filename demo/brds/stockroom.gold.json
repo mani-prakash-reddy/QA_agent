@@ -1,0 +1,150 @@
+{
+  "document": "stockroom",
+  "note": "Expected requirements. `match` is a phrase that must appear in the extracted requirement. `flagged` = vague, must be flagged, not guessed.",
+  "requirements": [
+    {
+      "key": "FR-1",
+      "type": "functional",
+      "match": "sign in with an email address and a password",
+      "flagged": false
+    },
+    {
+      "key": "FR-2",
+      "type": "functional",
+      "match": "log out at any time",
+      "flagged": false
+    },
+    {
+      "key": "FR-3",
+      "type": "functional",
+      "match": "number of products, how many are low on stock",
+      "flagged": false
+    },
+    {
+      "key": "FR-4",
+      "type": "functional",
+      "match": "five per page",
+      "flagged": false
+    },
+    {
+      "key": "FR-5",
+      "type": "functional",
+      "match": "search products by name and filter them by category",
+      "flagged": false
+    },
+    {
+      "key": "FR-6",
+      "type": "functional",
+      "match": "highlighted in the product list",
+      "flagged": false
+    },
+    {
+      "key": "FR-7",
+      "type": "functional",
+      "match": "details, its stock history and its supplier in separate tabs",
+      "flagged": false
+    },
+    {
+      "key": "FR-8",
+      "type": "functional",
+      "match": "create a product in three steps",
+      "flagged": false
+    },
+    {
+      "key": "BR-1",
+      "type": "business_rule",
+      "match": "product name is required and at most 80 characters",
+      "flagged": false
+    },
+    {
+      "key": "BR-2",
+      "type": "business_rule",
+      "match": "SKU must look like SKU-1234",
+      "flagged": false
+    },
+    {
+      "key": "BR-3",
+      "type": "business_rule",
+      "match": "price must be a number greater than 0",
+      "flagged": false
+    },
+    {
+      "key": "FR-9",
+      "type": "functional",
+      "match": "edit a product's name, SKU, category, price and stock",
+      "flagged": false
+    },
+    {
+      "key": "FR-10",
+      "type": "functional",
+      "match": "delete a product, after a confirmation page",
+      "flagged": false
+    },
+    {
+      "key": "FR-11",
+      "type": "functional",
+      "match": "uploaded in bulk from a spreadsheet",
+      "flagged": false
+    },
+    {
+      "key": "FR-12",
+      "type": "functional",
+      "match": "filter them by status",
+      "flagged": false
+    },
+    {
+      "key": "FR-13",
+      "type": "functional",
+      "match": "show the customer, the total and the status",
+      "flagged": false
+    },
+    {
+      "key": "FR-14",
+      "type": "functional",
+      "match": "change an order's status",
+      "flagged": false
+    },
+    {
+      "key": "FR-15",
+      "type": "functional",
+      "match": "add a supplier with a name and a valid contact email",
+      "flagged": false
+    },
+    {
+      "key": "FR-16",
+      "type": "functional",
+      "match": "emailed to the customer when they ship",
+      "flagged": false
+    },
+    {
+      "key": "FR-17",
+      "type": "functional",
+      "match": "set the low-stock threshold",
+      "flagged": false
+    },
+    {
+      "key": "FR-18",
+      "type": "functional",
+      "match": "not be offered any control that changes data",
+      "flagged": false
+    },
+    {
+      "key": "FR-19",
+      "type": "functional",
+      "match": "not see the Suppliers and Settings pages",
+      "flagged": false
+    },
+    {
+      "key": null,
+      "type": "nfr",
+      "match": "feel fast",
+      "flagged": true
+    },
+    {
+      "key": "NFR-2",
+      "type": "nfr",
+      "match": "within 1 second for up to 10,000 products",
+      "flagged": false
+    }
+  ]
+}

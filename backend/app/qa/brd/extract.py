@@ -55,7 +55,7 @@ def normalize(text: str) -> str:
         .replace("“", '"')
         .replace("”", '"')
         .replace("–", "-")
-        .replace("—", "-")
+        .replace("-", "-")
         .replace(" ", " ")
     )
     return re.sub(r"\s+", " ", text).strip().lower()
@@ -85,7 +85,9 @@ def ground_quote(quote: str, source: str) -> str | None:
     return best if best is not None and best_ratio >= FUZZY_THRESHOLD else None
 
 
-async def extract_chunk(model: BaseChatModel, chunk: Chunk) -> ExtractionResult:
+async def extract_chunk(
+    model: BaseChatModel, chunk: Chunk, context: str = ""
+) -> ExtractionResult:
     structured = model.with_structured_output(ExtractionResult)
     result = await structured.ainvoke(
         [
@@ -94,7 +96,8 @@ async def extract_chunk(model: BaseChatModel, chunk: Chunk) -> ExtractionResult:
                 "user",
                 EXTRACT_USER.format(
                     section=chunk.section_path or "(top level)", text=chunk.text
-                ),
+                )
+                + context,
             ),
         ]
     )

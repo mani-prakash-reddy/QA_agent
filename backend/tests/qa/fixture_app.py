@@ -58,7 +58,7 @@ APP_HTML = """<!doctype html><html><head><title>Fixture App</title>
 <style>[role=dialog],[role=menu]{position:fixed;background:#fff;border:1px solid #888;padding:12px;z-index:9;top:80px;left:260px}
 aside{float:left;width:220px}main{margin-left:240px}</style></head><body>
 <aside data-sidebar><nav><a href="/" data-nav><span class="material-icons">home</span> Dashboard</a> <a href="/items" data-nav><span class="material-icons">shopping_cart</span> Items</a>
-<a href="/settings" data-nav><span class="material-icons">settings</span> Settings</a> __ADMIN__</nav>
+<a href="/settings" data-nav><span class="material-icons">settings</span> Settings</a> <a href="/wizard" data-nav>Booking</a> __ADMIN__</nav>
 <button id="acct" aria-haspopup="menu">Account</button></aside>
 <main id="view"></main>
 <footer><a href="https://example.org/docs">Docs</a></footer>
@@ -106,7 +106,16 @@ function openRowMenu(anchor, name) {
   m.querySelector('#edit').onclick = () => openDialog('Edit Item', name);
   m.querySelector('#del').onclick = async () => { await fetch('/api/items/1', {method: 'DELETE'}); closeOverlays(); };
 }
+let wstep = 1;
+const wizardPage = () => wstep === 1
+  ? `<h1>New booking</h1><form><label for="gname">Guest name *</label><input id="gname" required maxlength="30"><button type="button" id="wnext">Next</button></form>`
+  : wstep === 2
+  ? `<h1>New booking</h1><form><label for="nights">Nights *</label><input id="nights" type="number" min="2" required>
+     <label for="room">Room type</label><select id="room"><option value="">Choose…</option><option>Single</option><option>Double</option></select>
+     <button type="button" id="wnext">Continue</button></form>`
+  : `<h1>New booking</h1><p>Review your booking</p><form><button type="submit" id="wfinish">Confirm booking</button></form>`;
 const pages = {
+  '/wizard': wizardPage,
   '/': () => `<h1>Dashboard</h1><p>Welcome back</p><a href="/profile" data-nav>View profile</a> <a href="/about" data-nav>About us</a>`,
   '/profile': () => `<h1>Profile of admin@fixture.test</h1><p>Account details</p>`,
   '/about': () => `<p>No heading on this page</p><button id="x">Contact</button>`,
@@ -126,6 +135,12 @@ function render() {
   view.querySelectorAll('a[data-nav]').forEach(a => a.addEventListener('click', e => {
     e.preventDefault(); history.pushState({}, '', a.getAttribute('href')); render(); }));
   const add = document.getElementById('add'); if (add) add.onclick = () => openDialog('Add Item');
+  const wn = document.getElementById('wnext');
+  if (wn) wn.onclick = async () => {
+    const f = wn.closest('form'); if (![...f.querySelectorAll('[required]')].every(i => i.value && i.checkValidity())) return;
+    await fetch('/api/wizard/step', {method: 'POST', body: '{}'}); wstep++; render(); };
+  const wf = document.getElementById('wfinish');
+  if (wf) wf.closest('form').addEventListener('submit', async e => { e.preventDefault(); await fetch('/api/items', {method: 'POST', body: '{}'}); });
   document.querySelectorAll('.ra').forEach(b => b.onclick = () => openRowMenu(b, b.dataset.name));
   const t2 = document.getElementById('t2'), t1 = document.getElementById('t1');
   if (t2) { t2.onclick = () => { t1.removeAttribute('aria-selected'); t2.setAttribute('aria-selected', 'true');
@@ -152,6 +167,9 @@ class FixtureServer:
         self.logins: list[str] = []
         self.expire_next = 0  # number of upcoming page loads that answer "signed out"
         self.verified: list[str] = []
+        self.wizard_posts = (
+            0  # step-to-step posts of the booking wizard (carry no data change)
+        )
         self._lock = threading.Lock()
         outer = self
 
@@ -263,6 +281,11 @@ class FixtureServer:
                         )
                     else:
                         self._send(401, "{}", "application/json")
+                    return
+                if self.path == "/api/wizard/step":
+                    with outer._lock:
+                        outer.wizard_posts += 1
+                    self._send(200, "{}", "application/json")
                     return
                 with outer._lock:
                     outer.mutations.append((self.command, self.path))

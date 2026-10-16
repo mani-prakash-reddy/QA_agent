@@ -1,0 +1,210 @@
+{
+  "document": "juice-shop",
+  "note": "Expected requirements. `match` is a phrase that must appear in the extracted requirement (title, description or quote). `flagged` = a vague/incomplete requirement that must be flagged, not guessed.",
+  "requirements": [
+    {
+      "key": "FR-1",
+      "type": "functional",
+      "match": "register a customer account",
+      "flagged": false
+    },
+    {
+      "key": "FR-2",
+      "type": "functional",
+      "match": "not be submittable",
+      "flagged": false
+    },
+    {
+      "key": "FR-3",
+      "type": "functional",
+      "match": "log in with their email",
+      "flagged": false
+    },
+    {
+      "key": "FR-4",
+      "type": "functional",
+      "match": "log out",
+      "flagged": false
+    },
+    {
+      "key": "FR-5",
+      "type": "functional",
+      "match": "view the product catalogue",
+      "flagged": false
+    },
+    {
+      "key": "FR-6",
+      "type": "functional",
+      "match": "search products",
+      "flagged": false
+    },
+    {
+      "key": "FR-7",
+      "type": "functional",
+      "match": "detail dialog",
+      "flagged": false
+    },
+    {
+      "key": "FR-8",
+      "type": "functional",
+      "match": "add a written review",
+      "flagged": false
+    },
+    {
+      "key": null,
+      "type": "nfr",
+      "match": "respond quickly to search",
+      "flagged": true
+    },
+    {
+      "key": "FR-9",
+      "type": "functional",
+      "match": "add a product to the basket",
+      "flagged": false
+    },
+    {
+      "key": "FR-10",
+      "type": "functional",
+      "match": "basket total",
+      "flagged": false
+    },
+    {
+      "key": "FR-11",
+      "type": "functional",
+      "match": "complete an order",
+      "flagged": false
+    },
+    {
+      "key": "FR-12",
+      "type": "functional",
+      "match": "user-friendly",
+      "flagged": true
+    },
+    {
+      "key": "BR-1",
+      "type": "business_rule",
+      "match": "at least 1 and at most 5",
+      "flagged": false
+    },
+    {
+      "key": "BR-2",
+      "type": "business_rule",
+      "match": "empty basket",
+      "flagged": false
+    },
+    {
+      "key": "FR-13",
+      "type": "functional",
+      "match": "loyalty points",
+      "flagged": false
+    },
+    {
+      "key": "FR-14",
+      "type": "functional",
+      "match": "change their password",
+      "flagged": false
+    },
+    {
+      "key": "FR-15",
+      "type": "functional",
+      "match": "saved addresses",
+      "flagged": false
+    },
+    {
+      "key": "FR-16",
+      "type": "functional",
+      "match": "data export",
+      "flagged": false
+    },
+    {
+      "key": "FR-17",
+      "type": "functional",
+      "match": "two-factor",
+      "flagged": false
+    },
+    {
+      "key": "FR-18",
+      "type": "functional",
+      "match": "newsletter preferences",
+      "flagged": false
+    },
+    {
+      "key": "FR-19",
+      "type": "functional",
+      "match": "Administration page listing",
+      "flagged": false
+    },
+    {
+      "key": "FR-20",
+      "type": "functional",
+      "match": "only accessible to users with the Administrator",
+      "flagged": false
+    },
+    {
+      "key": "NFR-1",
+      "type": "nfr",
+      "match": "fast and easy to use",
+      "flagged": true
+    },
+    {
+      "key": "NFR-2",
+      "type": "nfr",
+      "match": "within 3 seconds",
+      "flagged": false
+    },
+    {
+      "key": "NFR-3",
+      "type": "nfr",
+      "match": "TBD",
+      "flagged": true
+    },
+    {
+      "key": "NFR-4",
+      "type": "nfr",
+      "match": "99.5%",
+      "flagged": false
+    }
+  ],
+  "known_gaps_vs_app": {
+    "requirements_without_feature": [
+      "FR-13 loyalty points",
+      "FR-18 newsletter preferences"
+    ],
+    "features_not_in_brd": [
+      "Photo Wall",
+      "Chatbot",
+      "Score Board",
+      "Deluxe membership"
+    ]
+  },
+  "acceptable_extras": [
+    {
+      "match": "Customer",
+      "why": "role access row from the roles table"
+    },
+    {
+      "match": "Administrator",
+      "why": "role access row from the roles table"
+    },
+    {
+      "match": "valid email address",
+      "why": "validation row"
+    },
+    {
+      "match": "Minimum 5 characters",
+      "why": "validation row"
+    },
+    {
+      "match": "Must equal the password",
+      "why": "validation row"
+    },
+    {
+      "match": "maximum 160 characters",
+      "why": "validation row"
+    },
+    {
+      "match": "Whole number between 1 and 5",
+      "why": "validation row"
+    }
+  ]
+}

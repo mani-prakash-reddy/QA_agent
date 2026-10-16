@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Product | QA Agent — AI-powered contextual test case generation from a BRD |
+| Product | QA Agent - AI-powered contextual test case generation from a BRD |
 | Status | Draft v0.1 |
 | Source | `problem_statement.md` (assignment brief) |
 | Related | `docs/architecture.md`, `dev_docs/TRD.md`, `dev_docs/backend-schema.md`, `dev_docs/implementation-plan.md` |

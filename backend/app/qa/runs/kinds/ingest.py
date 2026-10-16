@@ -27,6 +27,7 @@ from app.qa.brd.parse import BrdParseError, parse_bytes
 from app.qa.brd.prompts import PROMPT_VERSION
 from app.qa.llm.gateway import LLMConfigError, UsageMeter, get_chat_model
 from app.qa.models import BrdChunk, BrdDocument, Requirement
+from app.qa.reference.load import load_refs_sync
 from app.qa.runs.context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -203,6 +204,7 @@ async def run_ingest(rc: RunContext) -> dict[str, Any]:
     done = 0
     accepted: dict[int, list[Candidate]] = {}
     stats = {"rejected_quotes": 0, "failed_chunks": 0}
+    refs = await asyncio.to_thread(load_refs_sync, rc.project.id)
     reported = {"in": 0, "out": 0}
 
     async def work(chunk: Chunk) -> None:
@@ -212,7 +214,9 @@ async def run_ingest(rc: RunContext) -> dict[str, Any]:
             result = None
             for attempt in range(ATTEMPTS):
                 try:
-                    result = await extract_chunk(model, chunk)
+                    result = await extract_chunk(
+                        model, chunk, refs.glossary_block(chunk.text)
+                    )
                     break
                 except Exception as exc:
                     if attempt == ATTEMPTS - 1:

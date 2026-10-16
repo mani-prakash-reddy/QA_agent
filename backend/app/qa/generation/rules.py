@@ -70,7 +70,19 @@ def open_steps(start_title: str, path: list[tuple[str, str]]) -> list[Step]:
     """Open the application, then press each control on the way to the screen."""
     steps = [Step(action="open_screen", screen=start_title)]
     for label, kind in path:
-        if kind == "url":  # a page opened by its address replaces the start page
+        if kind in {
+            "fill",
+            "select",
+        }:  # typed before pressing the next control (a wizard step)
+            _k, field_label, value = label.split("\x1f", 2)
+            steps.append(
+                Step(
+                    action=kind,  # type: ignore[arg-type]
+                    target=Target(label=field_label, kind="field"),
+                    value=Value(kind="literal", text=value),
+                )
+            )
+        elif kind == "url":  # a page opened by its address replaces the start page
             steps = [Step(action="open_screen", screen=label)]
         else:
             steps.append(Step(action="click", target=Target(label=label, kind=kind)))
@@ -209,6 +221,10 @@ def form_cases(
             continue
         label = f.label
         ev = {"field": label, "input_type": f.input_type}
+        if f.id in ctx.api_source:
+            ev["from_api_spec"] = ctx.api_source[
+                f.id
+            ]  # the rule comes from the API specification
         # ---- required: left empty (a dropdown cannot be cleared by a tester, so it is not tested this way)
         if f.required and f.input_type not in {"select", "combobox"}:
             msg = _message(f, "empty")

@@ -61,6 +61,9 @@ class CrawlConfig(BaseModel):
     max_concurrent_agents: int = Field(default=3, ge=1, le=10)
     # After the crawl, open (by address, read-only) the screens other roles reached and this role did not.
     probe_forbidden_routes: bool = True
+    # Walk multi-step forms: fill each step with valid sample values and press Next / Continue (never the
+    # final Create / Save / Submit). Off by default: a step of some applications saves a draft.
+    walk_wizards: bool = False
     # agentic mode: how many modules to plan, steps per module agent, and replans driven by the coverage report
     max_modules: int = Field(default=12, ge=1, le=50)
     scout_max_pages: int = Field(

@@ -399,7 +399,7 @@ export function RequirementsPanel({ projectId }: { projectId: string }) {
                   <TableCell>
                     <TypeBadge type={r.type} />
                   </TableCell>
-                  <TableCell>{r.module ?? "—"}</TableCell>
+                  <TableCell>{r.module ?? "-"}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap items-center gap-1">
                       <ReviewBadge status={r.review_status} />

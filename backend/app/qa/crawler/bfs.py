@@ -11,6 +11,7 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 from app.qa.agents.budget import BudgetExceeded
+from app.qa.agents.tools.browser_tools import is_next_button, sample_value
 from app.qa.browser.extract import Element, Snapshot, clean_label, route_template
 from app.qa.crawler.session import CrawlSession, PendingVia
 from app.qa.gate.gate import AgentContext, ToolGate
@@ -35,6 +36,7 @@ DOWNLOAD_RE = re.compile(
     re.I,
 )
 MAX_CLICKS_PER_STATE = 40
+MAX_WIZARD_STEPS = 6
 REPEAT_THRESHOLD = (
     3  # this many look-alike controls in one screen = a list of the same component
 )
@@ -68,6 +70,7 @@ class BfsExplorer:
         self.queue: deque[Frontier] = deque()
         self.queued: set[str] = set()  # route templates already queued/visited
         self.external_logged: set[str] = set()
+        self._wizard_done: set[str] = set()
         self._shell_re = (
             re.compile(
                 "|".join(f"(?:{x})" for x in self.cfg.shell_toggle_patterns), re.I
@@ -167,6 +170,8 @@ class BfsExplorer:
         self._discover_links(snap, item.depth, obs.state_id)
         await self._probe_forms(snap)
         await self._click_elements(snap, item.depth, item.url)
+        if self.cfg.walk_wizards:
+            await self._walk_wizard(item.url)
 
     # --- links ------------------------------------------------------------
     def _discover_links(
@@ -214,6 +219,80 @@ class BfsExplorer:
             and self.crawl.last_obs.is_new
         ):
             await self.call("probe_validation")
+
+    # --- multi-step forms ---------------------------------------------------
+    async def _walk_wizard(self, page_url: str) -> None:
+        """Fill each step with valid sample values and press Next, step after step, until the only button
+        left is a final one (Create / Save / Submit): that one is never pressed."""
+        await self._restore(page_url)
+        steps = 0
+        for _ in range(MAX_WIZARD_STEPS):
+            snap = self.rb.current
+            if snap is None or snap.overlay:
+                break
+            nxt = next(
+                (
+                    e
+                    for e in snap.elements
+                    if e.kind == "button"
+                    and e.region == "main"
+                    and not e.disabled
+                    and is_next_button(clean_label(e.label)[0])
+                ),
+                None,
+            )
+            if nxt is None:
+                if steps:
+                    finals = [
+                        clean_label(e.label)[0]
+                        for e in snap.elements
+                        if e.kind == "button" and e.is_submit
+                    ]
+                    await self.rec.log(
+                        "skipped",
+                        "wizard_final_step",
+                        url=snap.url,
+                        label=finals[0] if finals else "final step",
+                    )
+                break
+            if snap.fingerprint in self._wizard_done:
+                break
+            self._wizard_done.add(snap.fingerprint)
+            fills: list[dict[str, str]] = []
+            for el in snap.elements:
+                if el.form != nxt.form or el.region != "main":
+                    continue
+                pick = sample_value(el)
+                if pick is None:
+                    continue
+                action, value = pick
+                res = await self.call(
+                    "browser_select" if action == "select" else "browser_fill",
+                    handle=el.h,
+                    value=value,
+                )
+                if not (res.get("error") or res.get("blocked")):
+                    fills.append(
+                        {
+                            "kind": action,
+                            "label": clean_label(el.label)[0],
+                            "value": value,
+                        }
+                    )
+            self.crawl.pending_fills = fills
+            res = await self.call("browser_advance", handle=nxt.h)
+            if (
+                res.get("error")
+                or res.get("blocked")
+                or res.get("effect") == "no_change"
+            ):
+                break
+            steps += 1
+        if steps:
+            await self.rec.log(
+                "crawled", "wizard_walked", url=page_url, label=f"{steps} step(s)"
+            )
+            await self._restore(page_url)
 
     # --- clicking ---------------------------------------------------------
     def _eligible(self, el: Element, first_row: int | None) -> tuple[bool, str | None]:

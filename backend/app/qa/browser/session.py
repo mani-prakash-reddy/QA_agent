@@ -372,6 +372,21 @@ class RoleBrowser:
         except Exception as exc:
             raise ActionError(f"fill failed: {_why(exc)}") from exc
 
+    async def select(self, handle: str, value: str) -> None:
+        try:
+            await self._locator(handle).select_option(label=value, timeout=5000)
+        except Exception as exc:
+            raise ActionError(f"select failed: {_why(exc)}") from exc
+        await self.settle(timeout=2.0)
+
+    async def click_advancing(self, handle: str) -> None:
+        """Press a multi-step form's Next: the guard lets the step's own same-origin request through."""
+        self.guard.advancing = True
+        try:
+            await self.click(handle)
+        finally:
+            self.guard.advancing = False
+
     async def press(self, key: str) -> None:
         await self.page.keyboard.press(key)
         await self.settle(timeout=3.0)

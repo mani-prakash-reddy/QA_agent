@@ -226,7 +226,38 @@ def parse_docx(data: bytes) -> ParsedDoc:
                 flush_list()
                 blocks.append(Block("text", text))
     flush_list()
-    return ParsedDoc(blocks=blocks, page_count=None, format="docx")
+    parsed_docx = ParsedDoc(blocks=blocks, page_count=None, format="docx")
+    import zipfile
+
+    try:
+        with zipfile.ZipFile(BytesIO(data)) as z:
+            media = [
+                n
+                for n in z.namelist()
+                if n.startswith("word/media/")
+                and n.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
+            ][:12]
+            images = [(f"({n.rsplit('/', 1)[-1]})", z.read(n)) for n in media]
+    except Exception:
+        images = []
+    sized: list[tuple[str, bytes]] = []
+    for where, raw in images:
+        try:
+            from PIL import Image
+
+            w, h = Image.open(BytesIO(raw)).size
+        except Exception:
+            continue
+        if w >= MIN_DIAGRAM[0] and h >= MIN_DIAGRAM[1]:
+            sized.append((where, raw))
+    diagrams, n_diag = _diagram_blocks(sized)
+    if diagrams:
+        parsed_docx.blocks.append(Block("heading", "Diagrams", level=2))
+        parsed_docx.blocks.extend(diagrams)
+        parsed_docx.warnings.append(
+            f"{n_diag} diagram(s) were read with OCR: only their labels are used, not the arrows or the layout"
+        )
+    return parsed_docx
 
 
 # ---------------------------------------------------------------- PDF
@@ -383,6 +414,56 @@ def _ocr_scanned_pages(pages: list[Any]) -> tuple[list[int], int]:
     return done, dropped
 
 
+MIN_DIAGRAM = (250, 120)  # smaller images are logos and icons
+
+
+def _diagram_blocks(images: list[tuple[str, bytes]]) -> tuple[list[Block], int]:
+    """Text read from embedded images (flow charts, screen mock-ups). Only the labels are recovered: the
+    arrows and the layout are not interpreted, and the parse says so."""
+    from app.qa.brd import ocr
+
+    blocks: list[Block] = []
+    for where, raw in images:
+        try:
+            lines = ocr.image_lines(raw)
+        except (
+            Exception
+        ):  # no OCR engine or an unreadable image: the document still parses
+            return blocks, len(blocks)
+        if len(lines) >= 3:
+            blocks.append(
+                Block(
+                    "text",
+                    f"Diagram {where} (text read from an image; arrows and layout are not interpreted): "
+                    + "; ".join(lines[:40]),
+                )
+            )
+    return blocks, len(blocks)
+
+
+def _pdf_images(doc: Any, skip_pages: list[int]) -> list[tuple[str, bytes]]:
+    out: list[tuple[str, bytes]] = []
+    seen: set[int] = set()
+    for no, page in enumerate(doc, start=1):
+        if no in skip_pages:
+            continue
+        for img in page.get_images(full=True):
+            xref = img[0]
+            if xref in seen:
+                continue
+            seen.add(xref)
+            try:
+                info = doc.extract_image(xref)
+            except Exception:
+                continue
+            if (
+                info.get("width", 0) >= MIN_DIAGRAM[0]
+                and info.get("height", 0) >= MIN_DIAGRAM[1]
+            ):
+                out.append((f"on page {no}", info["image"]))
+    return out[:12]
+
+
 def parse_pdf(data: bytes) -> ParsedDoc:
     import pymupdf
 
@@ -427,7 +508,15 @@ def parse_pdf(data: bytes) -> ParsedDoc:
     blocks: list[Block] = []
     for page_no, page in enumerate(pages, start=1):
         blocks.extend(_parse_pdf_page(page, page_no, heading_sizes, repeated))
+    diagrams, n_diag = _diagram_blocks(_pdf_images(doc, ocr_pages))
+    if diagrams:
+        blocks.append(Block("heading", "Diagrams", level=2))
+        blocks.extend(diagrams)
     parsed = ParsedDoc(blocks=blocks, page_count=doc.page_count, format="pdf")
+    if n_diag:
+        parsed.warnings.append(
+            f"{n_diag} diagram(s) were read with OCR: only their labels are used, not the arrows or the layout"
+        )
     if ocr_pages:
         parsed.warnings.append(
             f"{len(ocr_pages)} page(s) had no text layer and were read with OCR "

@@ -3,10 +3,10 @@
 Brief document. The UI reuses the existing template's design system, so the goal is consistency and fast delivery, not a new visual identity.
 
 ## 1. Principles
-1. **Transparency over polish** — users must trust what the agents did; show evidence (screenshots, quotes, citations) next to every claim.
-2. **Dense but scannable** — QA work is table-heavy; prioritize filters, sorting, keyboard-friendly review.
-3. **Live but calm** — streaming content should not jump; auto-scroll can be paused.
-4. **Safe by default** — destructive/expensive actions (disable safe mode, start a costly run) need explicit confirmation.
+1. **Transparency over polish** - users must trust what the agents did; show evidence (screenshots, quotes, citations) next to every claim.
+2. **Dense but scannable** - QA work is table-heavy; prioritize filters, sorting, keyboard-friendly review.
+3. **Live but calm** - streaming content should not jump; auto-scroll can be paused.
+4. **Safe by default** - destructive/expensive actions (disable safe mode, start a costly run) need explicit confirmation.
 
 ## 2. Foundation (reuse)
 - Components: shadcn/ui (button, card, dialog, sheet, tabs, table, badge, select, form, tooltip, skeleton, sonner toast) already in `frontend/src/components/ui`.
@@ -27,14 +27,14 @@ Brief document. The UI reuses the existing template's design system, so the goal
 | `CostMeter` | Tokens + cost, per agent and total, vs cap |
 | `SourceQuote` | Requirement's BRD quote with page/section link |
 | `RoleMatrix` | Grid roles × states/actions with allowed/forbidden/not-observed cells |
-| `GraphView` | Navigation graph (lightweight lib, e.g. React Flow/Cytoscape — choose in M6); filter by role/module |
+| `GraphView` | Navigation graph (lightweight lib, e.g. React Flow/Cytoscape - choose in M6); filter by role/module |
 | `TestCaseDrawer` | Rendered steps, grounding links to KM states, version history, edit mode |
 | `RtmGrid` | Requirement × test-type counts with heat-style emphasis for zero coverage |
 | `ConfigForm` | Structured forms for crawl/generation/template config with sensible defaults and "advanced" collapse |
 
 ## 4. Key screen layouts
 
-**Live Run (the showpiece)** — three columns on desktop, stacked on narrow screens:
+**Live Run (the showpiece)** - three columns on desktop, stacked on narrow screens:
 ```
 ┌ Run header: status · elapsed · cost · [Pause] [Stop] ─────────────────────────┐
 │ Agent tree (left, 20%) │ Event feed for selected agent (center, 45%) │ Browser  │
@@ -47,9 +47,9 @@ Brief document. The UI reuses the existing template's design system, so the goal
 ```
 Prompt cards (e.g., "Enter OTP for Admin") appear pinned above the feed.
 
-**Test review** — table with sticky filters (requirement, type, role, status, text search); row click opens a right-side drawer; bulk select → approve/reject/regenerate; keyboard `J/K` next/prev, `A` approve, `R` reject.
+**Test review** - table with sticky filters (requirement, type, role, status, text search); row click opens a right-side drawer; bulk select → approve/reject/regenerate; keyboard `J/K` next/prev, `A` approve, `R` reject.
 
-**Requirements** — table with ambiguity badges; row expands to show the source quote and flag reasons; inline edit.
+**Requirements** - table with ambiguity badges; row expands to show the source quote and flag reasons; inline edit.
 
 ## 5. Content and tone
 - Use the application's own terms (project, role, state → shown as "screen", snapshot → "app model").

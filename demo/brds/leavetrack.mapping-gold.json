@@ -1,0 +1,136 @@
+{
+  "note": "Written by the developer from the app's source: the screens are the ones a complete crawl reaches. `expect` = match | gap; `ambiguous` requirements are not scored.",
+  "snapshot": "leavetrack test app, complete crawl",
+  "requirements": {
+    "FR-1": {
+      "expect": "match",
+      "screens": [
+        "/login|"
+      ]
+    },
+    "FR-2": {
+      "expect": "match",
+      "screens": [
+        "/login|"
+      ]
+    },
+    "FR-3": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-4": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-5": {
+      "expect": "match",
+      "screens": [
+        "/|dashboard",
+        "/|"
+      ]
+    },
+    "FR-6": {
+      "expect": "match",
+      "screens": [
+        "/leave|my leave"
+      ]
+    },
+    "FR-7": {
+      "expect": "match",
+      "screens": [
+        "/leave|my leave"
+      ]
+    },
+    "BR-1": {
+      "expect": "match",
+      "screens": [
+        "/leave|my leave"
+      ]
+    },
+    "BR-2": {
+      "expect": "match",
+      "screens": [
+        "/leave|my leave"
+      ]
+    },
+    "BR-3": {
+      "expect": "match",
+      "screens": [
+        "/leave|my leave"
+      ]
+    },
+    "FR-8": {
+      "ambiguous": true,
+      "why": "Vague by design"
+    },
+    "FR-9": {
+      "expect": "match",
+      "screens": [
+        "/team|team requests"
+      ]
+    },
+    "BR-4": {
+      "expect": "match",
+      "screens": [
+        "/team|team requests"
+      ]
+    },
+    "FR-10": {
+      "expect": "gap"
+    },
+    "FR-11": {
+      "expect": "match",
+      "screens": [
+        "/employees|employees"
+      ]
+    },
+    "FR-12": {
+      "expect": "match",
+      "screens": [
+        "/employees|employees"
+      ]
+    },
+    "BR-5": {
+      "expect": "match",
+      "screens": [
+        "/employees|employees"
+      ]
+    },
+    "FR-13": {
+      "expect": "match",
+      "screens": [
+        "/policies|leave policies"
+      ]
+    },
+    "BR-6": {
+      "expect": "match",
+      "screens": [
+        "/policies|leave policies"
+      ]
+    },
+    "FR-14": {
+      "expect": "match",
+      "screens": [
+        "/reports|reports"
+      ]
+    },
+    "FR-15": {
+      "expect": "gap"
+    },
+    "FR-16": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-17": {
+      "expect": "gap"
+    },
+    "NFR-2": {
+      "expect": "gap"
+    }
+  },
+  "undocumented_screens": {
+    "routes": [
+      "/profile"
+    ]
+  }
+}

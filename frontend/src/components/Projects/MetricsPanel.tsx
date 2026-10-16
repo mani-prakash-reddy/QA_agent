@@ -14,7 +14,7 @@ import {
 
 const fmt = (s: number | null | undefined) =>
   s == null
-    ? "—"
+    ? "-"
     : `${Math.floor(s / 60)}m ${String(Math.round(s % 60)).padStart(2, "0")}s`
 
 export function MetricsPanel({ projectId }: { projectId: string }) {
@@ -29,8 +29,11 @@ export function MetricsPanel({ projectId }: { projectId: string }) {
       <p className="text-sm text-muted-foreground">
         Time and model tokens per kind of run.{" "}
         {data.input_tokens + data.output_tokens} tokens in total (
-        {data.input_tokens} in, {data.output_tokens} out). Cost is not priced:
-        tokens are what the provider reports.
+        {data.input_tokens} in, {data.output_tokens} out), an estimated{" "}
+        <strong>${(data.cost_usd ?? 0).toFixed(2)}</strong> at $
+        {data.price_input_per_m}/ ${data.price_output_per_m} per million input /
+        output tokens (list prices set in the server settings; embeddings not
+        included).
       </p>
       <div className="rounded-md border">
         <Table>
@@ -41,6 +44,7 @@ export function MetricsPanel({ projectId }: { projectId: string }) {
               <TableHead>Time</TableHead>
               <TableHead>Tokens in</TableHead>
               <TableHead>Tokens out</TableHead>
+              <TableHead>Est. cost</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -51,6 +55,7 @@ export function MetricsPanel({ projectId }: { projectId: string }) {
                 <TableCell>{fmt(k.seconds)}</TableCell>
                 <TableCell>{k.input_tokens}</TableCell>
                 <TableCell>{k.output_tokens}</TableCell>
+                <TableCell>${(k.cost_usd ?? 0).toFixed(3)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -76,7 +81,8 @@ export function MetricsPanel({ projectId }: { projectId: string }) {
                 </TableCell>
                 <TableCell>{fmt(r.seconds)}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {r.input_tokens + r.output_tokens} tokens
+                  {r.input_tokens + r.output_tokens} tokens · $
+                  {(r.cost_usd ?? 0).toFixed(3)}
                 </TableCell>
               </TableRow>
             ))}

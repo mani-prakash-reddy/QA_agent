@@ -1,0 +1,138 @@
+{
+  "note": "Written by the developer from the app's source: the screens are the ones a complete crawl reaches. `expect` = match | gap; `ambiguous` requirements are not scored.",
+  "snapshot": "stockroom test app, complete crawl",
+  "requirements": {
+    "FR-1": {
+      "expect": "match",
+      "screens": [
+        "/login|"
+      ]
+    },
+    "FR-2": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-3": {
+      "expect": "match",
+      "screens": [
+        "/|dashboard",
+        "/|"
+      ]
+    },
+    "FR-4": {
+      "expect": "match",
+      "screens": [
+        "/products|products",
+        "/products?category&page&q|"
+      ]
+    },
+    "FR-5": {
+      "expect": "match",
+      "screens": [
+        "/products|products",
+        "/products?category&page&q|"
+      ]
+    },
+    "FR-6": {
+      "expect": "match",
+      "screens": [
+        "/products|products",
+        "/products?category&page&q|"
+      ]
+    },
+    "FR-7": {
+      "expect": "match",
+      "screens": [
+        "/products/:id|",
+        "/products/:id?tab|"
+      ]
+    },
+    "FR-8": {
+      "expect": "match",
+      "screens": [
+        "/products/new/:id|"
+      ]
+    },
+    "BR-1": {
+      "expect": "match",
+      "screens": [
+        "/products/new/:id|",
+        "/products/:id/edit|"
+      ]
+    },
+    "BR-2": {
+      "expect": "match",
+      "screens": [
+        "/products/new/:id|",
+        "/products/:id/edit|"
+      ]
+    },
+    "BR-3": {
+      "expect": "match",
+      "screens": [
+        "/products/:id/edit|"
+      ]
+    },
+    "FR-9": {
+      "expect": "match",
+      "screens": [
+        "/products/:id/edit|"
+      ]
+    },
+    "FR-10": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-11": {
+      "expect": "gap"
+    },
+    "FR-12": {
+      "expect": "match",
+      "screens": [
+        "/orders|orders",
+        "/orders?status|"
+      ]
+    },
+    "FR-13": {
+      "expect": "match",
+      "screens": [
+        "/orders/:id|"
+      ]
+    },
+    "FR-14": {
+      "expect": "match",
+      "screens": [
+        "/orders/:id|"
+      ]
+    },
+    "FR-15": {
+      "expect": "match",
+      "screens": [
+        "/suppliers|suppliers"
+      ]
+    },
+    "FR-16": {
+      "expect": "gap"
+    },
+    "FR-17": {
+      "expect": "match",
+      "screens": [
+        "/settings|settings"
+      ]
+    },
+    "FR-18": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-19": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "NFR-2": {
+      "expect": "gap"
+    }
+  },
+  "undocumented_screens": {
+    "routes": []
+  }
+}

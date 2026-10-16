@@ -1,0 +1,156 @@
+{
+  "document": "leavetrack",
+  "note": "Expected requirements. `match` is a phrase that must appear in the extracted requirement. `flagged` = vague, must be flagged, not guessed.",
+  "requirements": [
+    {
+      "key": "FR-1",
+      "type": "functional",
+      "match": "sign in with an email address",
+      "flagged": false
+    },
+    {
+      "key": "FR-2",
+      "type": "functional",
+      "match": "six-digit verification code",
+      "flagged": false
+    },
+    {
+      "key": "FR-3",
+      "type": "functional",
+      "match": "sign out from the account menu",
+      "flagged": false
+    },
+    {
+      "key": "FR-4",
+      "type": "functional",
+      "match": "sent to the sign-in page",
+      "flagged": false
+    },
+    {
+      "key": "FR-5",
+      "type": "functional",
+      "match": "remaining annual leave days",
+      "flagged": false
+    },
+    {
+      "key": "FR-6",
+      "type": "functional",
+      "match": "choosing a leave type",
+      "flagged": false
+    },
+    {
+      "key": "FR-7",
+      "type": "functional",
+      "match": "leave history with type, dates, days and status",
+      "flagged": false
+    },
+    {
+      "key": "BR-1",
+      "type": "business_rule",
+      "match": "end date of a request cannot be before",
+      "flagged": false
+    },
+    {
+      "key": "BR-2",
+      "type": "business_rule",
+      "match": "reason of a request must be at most 200",
+      "flagged": false
+    },
+    {
+      "key": "BR-3",
+      "type": "business_rule",
+      "match": "cannot use more days than the remaining balance",
+      "flagged": false
+    },
+    {
+      "key": "FR-8",
+      "type": "functional",
+      "match": "easy to submit",
+      "flagged": true
+    },
+    {
+      "key": "FR-9",
+      "type": "functional",
+      "match": "approve or reject each one",
+      "flagged": false
+    },
+    {
+      "key": "BR-4",
+      "type": "business_rule",
+      "match": "requires a comment of at least five characters",
+      "flagged": false
+    },
+    {
+      "key": "FR-10",
+      "type": "functional",
+      "match": "notified by email when their request is decided",
+      "flagged": false
+    },
+    {
+      "key": "FR-11",
+      "type": "functional",
+      "match": "list of employees with name, email, department and role",
+      "flagged": false
+    },
+    {
+      "key": "FR-12",
+      "type": "functional",
+      "match": "add an employee by entering a full name",
+      "flagged": false
+    },
+    {
+      "key": "BR-5",
+      "type": "business_rule",
+      "match": "name is required and at most 60 characters",
+      "flagged": false
+    },
+    {
+      "key": "FR-13",
+      "type": "functional",
+      "match": "set the annual leave days",
+      "flagged": false
+    },
+    {
+      "key": "BR-6",
+      "type": "business_rule",
+      "match": "whole number from 0 to 60",
+      "flagged": false
+    },
+    {
+      "key": "FR-14",
+      "type": "functional",
+      "match": "leave taken by leave type and by department",
+      "flagged": false
+    },
+    {
+      "key": "FR-15",
+      "type": "functional",
+      "match": "export the employee list to a spreadsheet",
+      "flagged": false
+    },
+    {
+      "key": "FR-16",
+      "type": "functional",
+      "match": "Only managers and HR shall see the Team requests page",
+      "flagged": false
+    },
+    {
+      "key": "FR-17",
+      "type": "functional",
+      "match": "edit their profile picture",
+      "flagged": false
+    },
+    {
+      "key": null,
+      "type": "nfr",
+      "match": "intuitive for first-time users",
+      "flagged": true
+    },
+    {
+      "key": "NFR-2",
+      "type": "nfr",
+      "match": "load within 2 seconds for up to 500 employees",
+      "flagged": false
+    }
+  ]
+}

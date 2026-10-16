@@ -2,18 +2,78 @@
 
 Observation auto-records into the knowledge model: facts come from the browser, not from agent claims."""
 
+import re
 from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 from pydantic import BaseModel, Field
 
-from app.qa.browser.extract import Snapshot, clean_label
+from app.qa.browser.extract import Element, Snapshot, clean_label
 from app.qa.browser.probe import probe_field
 from app.qa.browser.session import ActionError
 from app.qa.crawler.session import CrawlSession, Observation, PendingVia
 from app.qa.gate.gate import AgentContext, ToolBlocked, ToolDef
 
 MAX_ELEMENTS = 80
+# A multi-step form's way forward, and the buttons that finish (or change) something. Only the first kind is
+# ever pressed, and only when CrawlConfig.walk_wizards is on.
+NEXT_RE = re.compile(
+    r"^(next( step)?|continue|proceed|go to .+|review( and .+)?|forward|step \d+)$",
+    re.I,
+)
+FINAL_RE = re.compile(
+    r"\b(create|save|submit|finish|confirm|place|pay|publish|send|register|sign ?up|delete|remove|order|purchase)\b",
+    re.I,
+)
+
+
+def is_next_button(label: str) -> bool:
+    return bool(NEXT_RE.match(label.strip())) and not FINAL_RE.search(label)
+
+
+def sample_value(el: Element) -> tuple[str, str] | None:
+    """A valid-looking value for a field of a wizard step: ("fill" | "select", text), or None to leave it."""
+    if (
+        el.disabled
+        or el.readonly
+        or el.kind in {"checkbox", "radio", "switch", "button", "link"}
+    ):
+        return None
+    if el.kind == "select":
+        choices = [
+            o
+            for o in (el.options or [])
+            if o and not re.match(r"^(choose|select|pick|--|\.\.\.)", o, re.I)
+        ]
+        return ("select", choices[0]) if choices else None
+    if el.kind not in {"input", "textarea"}:
+        return None
+    t = (el.input_type or "text").lower()
+    if t in {"hidden", "file", "submit", "button", "reset", "image", "search"}:
+        return None
+    label = clean_label(el.label)[0].lower()
+    if t == "email" or "email" in label:
+        return ("fill", "qa.sample@example.com")
+    if t == "number" or t == "range":
+        lo = el.min if el.min not in (None, "") else None
+        try:
+            return ("fill", str(int(float(lo))) if lo is not None else "1")
+        except ValueError:
+            return ("fill", "1")
+    if t == "tel":
+        return ("fill", "+10000000000")
+    if t == "url":
+        return ("fill", "https://example.com")
+    if t == "date":
+        return ("fill", "2030-01-15")
+    if t == "password":
+        return ("fill", "Sample-Passw0rd!")
+    if "sku" in label:
+        return ("fill", "SKU-9001")
+    text = "Sample text" if t == "textarea" or "description" in label else "Sample"
+    if el.maxlength and el.maxlength < len(text):
+        text = text[: el.maxlength]
+    return ("fill", text)
 
 
 class NoArgs(BaseModel):
@@ -37,6 +97,11 @@ class NavigateArgs(BaseModel):
         default=False,
         description="Force a full reload (resets open drawers, tabs, filters)",
     )
+
+
+class SelectArgs(BaseModel):
+    handle: str
+    value: str = Field(max_length=200, description="The option's visible text")
 
 
 class SkipArgs(BaseModel):
@@ -204,6 +269,66 @@ async def browser_fill(ctx: AgentContext, args: FillArgs) -> dict[str, Any]:
     return {"filled": clean_label(el.label)[0]}
 
 
+async def browser_select(ctx: AgentContext, args: SelectArgs) -> dict[str, Any]:
+    crawl = crawl_of(ctx)
+    snap = crawl.rb.current
+    el = snap.by_handle(args.handle) if snap else None
+    if el is None or el.kind != "select":
+        raise ActionError(f"'{args.handle}' is not a dropdown from the latest snapshot")
+    await crawl.rb.select(args.handle, args.value)
+    return {"selected": clean_label(el.label)[0]}
+
+
+async def browser_advance(ctx: AgentContext, args: HandleArgs) -> dict[str, Any]:
+    """Press the Next/Continue button of a multi-step form (never the final one). Opt-in per project."""
+    crawl = crawl_of(ctx)
+    rb, rec = crawl.rb, crawl.rec
+    snap = rb.current
+    el = snap.by_handle(args.handle) if snap else None
+    if snap is None or el is None:
+        raise ActionError(
+            f"unknown handle '{args.handle}': take a fresh snapshot first"
+        )
+    label, _ = clean_label(el.label)
+    if not crawl.cfg.walk_wizards:
+        raise ToolBlocked("wizard_walk_off")
+    if not is_next_button(label) or crawl.policy.classify(label, el.href).blocked:
+        await rec.log(
+            "skipped",
+            "wizard_final_step",
+            url=snap.url,
+            action="advance",
+            label=label,
+            state_id=crawl.current_state_id,
+        )
+        raise ToolBlocked("not_a_next_button")
+    fills, crawl.pending_fills = crawl.pending_fills, []
+    if crawl.current_state_id is not None:
+        crawl.pending_via = PendingVia(
+            crawl.current_state_id, el.key, label, el.kind, el.region, el.in_row, fills
+        )
+    before_url, before_fp = snap.url, snap.fingerprint
+    await rb.click_advancing(args.handle)
+    snap2, obs2 = await _observe(ctx, "click")
+    if snap2.url != before_url:
+        effect = "navigated"
+    elif snap2.fingerprint != before_fp:
+        effect = "state_changed"
+    else:
+        effect = "no_change"
+        crawl.pending_via = None
+    await rec.log(
+        "crawled",
+        None,
+        url=snap2.url,
+        action="advance",
+        label=label,
+        source="click",
+        state_id=obs2.state_id,
+    )
+    return {"effect": effect, **compact(snap2, crawl, obs2)}
+
+
 async def browser_navigate(ctx: AgentContext, args: NavigateArgs) -> dict[str, Any]:
     crawl = crawl_of(ctx)
     url = urljoin(crawl.target_url, args.route)
@@ -308,6 +433,18 @@ BROWSER_TOOLS = [
         "Type text into a field by handle (does not submit).",
         FillArgs,
         browser_fill,
+    ),
+    ToolDef(
+        "browser_select",
+        "Choose an option (by its visible text) in a dropdown, by handle.",
+        SelectArgs,
+        browser_select,
+    ),
+    ToolDef(
+        "browser_advance",
+        "Press the Next / Continue button of a multi-step form (never a final Create/Save/Submit). Only when the project allows walking wizards.",
+        HandleArgs,
+        browser_advance,
     ),
     ToolDef(
         "browser_navigate",

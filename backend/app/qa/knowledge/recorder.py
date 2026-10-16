@@ -397,6 +397,7 @@ class KnowledgeRecorder:
         via_key: str | None,
         action: str,
         kind: str,
+        fills: list[dict[str, str]] | None = None,
     ) -> bool:
         with Session(engine) as s:
             exists = s.exec(
@@ -419,6 +420,7 @@ class KnowledgeRecorder:
                     action=action,
                     kind=kind,
                     observed_by_role_id=self.role_id,
+                    fills=fills or [],
                 )
             )
             s.commit()
@@ -433,11 +435,19 @@ class KnowledgeRecorder:
         *,
         action: str = "click",
         kind: str = "navigation",
+        fills: list[dict[str, str]] | None = None,
     ) -> None:
         if from_id == to_id:
             return
         if await asyncio.to_thread(
-            self._transition_sync, from_id, to_id, via_label, via_key, action, kind
+            self._transition_sync,
+            from_id,
+            to_id,
+            via_label,
+            via_key,
+            action,
+            kind,
+            fills,
         ):
             self.stats.transitions += 1
             await self.events.emit(

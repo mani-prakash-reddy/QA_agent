@@ -1,4 +1,4 @@
-# QA Agent — System Architecture
+# QA Agent - System Architecture
 
 > Product document (deliverable 1 of the assignment). Describes components, data flow, technology choices with reasons, and the prompt strategy.
 > Implementation-level detail (APIs, schemas, tool specs) lives in `dev_docs/TRD.md` and `dev_docs/backend-schema.md`.
@@ -29,9 +29,9 @@ QA Agent takes a Business Requirements Document (BRD) and access to a live web a
 
 Three properties drive every design decision:
 
-1. **Grounded** — a test step can only reference a screen, field or button that was actually observed in the app.
-2. **Traceable** — every test case links to a requirement; every requirement links to the screens that implement it; gaps are reported in both directions.
-3. **Safe and private** — the crawler cannot perform destructive actions by default, and credentials never reach an LLM.
+1. **Grounded** - a test step can only reference a screen, field or button that was actually observed in the app.
+2. **Traceable** - every test case links to a requirement; every requirement links to the screens that implement it; gaps are reported in both directions.
+3. **Safe and private** - the crawler cannot perform destructive actions by default, and credentials never reach an LLM.
 
 ## 2. System context
 
@@ -57,7 +57,7 @@ Three properties drive every design decision:
                               │ Worker (arq)      │──────────┘
                               │ LangGraph agents  │
                               │ Playwright        │── HTTPS ──► Application under test (staging)
-                              │ Tool gate         │── HTTPS ──► LLM (Groq / OpenRouter / self-hosted)
+                              │ Tool gate         │── HTTPS ──► LLM (Groq / OpenRouter)
                               └───────────────────┘
 ```
 
@@ -106,16 +106,16 @@ Rules that hold the design together:
 
 ## 5. End-to-end data flow
 
-1. **Project setup** — user defines target URL, roles, credentials (encrypted), crawl/generation config, test-case template.
-2. **BRD ingest** — upload → parse → chunk → extract requirements (structured output) → ambiguity flags → human can correct.
-3. **Authenticate** — worker logs in per role in code (MFA/session handling), producing a browser context per role.
-4. **Explore** — supervisor reads requirements + initial navigation, spawns explorers per role × module. Explorers record states, elements, forms, transitions, validation messages, screenshots, observed API calls. Everything streams to the UI.
-5. **Build KM snapshot** — relational rows are the source of truth; the AGE graph and pgvector embeddings are derived. Role-permission matrix is computed from per-role observations.
-6. **Map** — requirements ↔ states with confidence and citations; gap report generated.
-7. **Generate** — rule engine + test-author agents produce structured test cases against the snapshot.
-8. **Validate** — grounding check, role reachability, dedup, trivial filter; one regeneration attempt with validator feedback; failures logged.
-9. **Review** — QA edits/approves/regenerates; versions kept.
-10. **Output** — RTM, gap report, CSV/JSON/Excel, run metrics (time, tokens, cost), crawl log.
+1. **Project setup** - user defines target URL, roles, credentials (encrypted), crawl/generation config, test-case template.
+2. **BRD ingest** - upload → parse → chunk → extract requirements (structured output) → ambiguity flags → human can correct.
+3. **Authenticate** - worker logs in per role in code (MFA/session handling), producing a browser context per role.
+4. **Explore** - supervisor reads requirements + initial navigation, spawns explorers per role × module. Explorers record states, elements, forms, transitions, validation messages, screenshots, observed API calls. Everything streams to the UI.
+5. **Build KM snapshot** - relational rows are the source of truth; the AGE graph and pgvector embeddings are derived. Role-permission matrix is computed from per-role observations.
+6. **Map** - requirements ↔ states with confidence and citations; gap report generated.
+7. **Generate** - rule engine + test-author agents produce structured test cases against the snapshot.
+8. **Validate** - grounding check, role reachability, dedup, trivial filter; one regeneration attempt with validator feedback; failures logged.
+9. **Review** - QA edits/approves/regenerates; versions kept.
+10. **Output** - RTM, gap report, CSV/JSON/Excel, run metrics (time, tokens, cost), crawl log.
 
 A completed KM snapshot is reusable: steps 6–10 can re-run without re-crawling. A snapshot older than a configured age is flagged stale.
 
@@ -143,7 +143,7 @@ A sitemap is optional and rarely useful for authenticated SPAs. Discovery merges
 
 - **Steps are structured**, not prose: `{action, element_ref, value_spec}`. The LLM references elements by KM handle. A deterministic **renderer** produces the human-readable step using the real label and navigation path (`Admin → Users → "Add User"`). The model never types a label, so it cannot invent one.
 - **Rules where logic is mechanical:** boundary values, equivalence classes, required/format validation, and role-based access are generated from crawled metadata and the permission matrix, with no LLM.
-- **LLM where judgment is needed:** business rules, end-to-end workflows, priority, and wording of expected results — constrained to the requirement text and mapped states.
+- **LLM where judgment is needed:** business rules, end-to-end workflows, priority, and wording of expected results - constrained to the requirement text and mapped states.
 - **Validation gate:** schema → grounding (element/state exists, role can reach it) → dedup (normalized step hash + embedding cosine) → trivial filter → one feedback regeneration → drop and log.
 - **Test types covered:** positive, negative, boundary value, field validation, role-based access, end-to-end, business-rule.
 - **Output fields:** Test Case ID, Requirement ID, Module, Title, Preconditions, Test Steps, Test Data, Expected Result, Priority, Test Type, Role (template-configurable).
@@ -175,8 +175,8 @@ A sitemap is optional and rarely useful for authenticated SPAs. Discovery merges
 
 - **Credentials:** encrypted at rest (Fernet; key from environment/secret manager), decrypted only inside the worker's auth module. Never logged, never in prompts, never in screenshots' captions or the KM. Generated tests use placeholders such as `<ADMIN_PASSWORD>`. A test asserts known secrets never appear in outgoing LLM payloads.
 - **Confidentiality of BRD and app data:** BRD text and page structure *do* go to the LLM and the embedding endpoint. Mitigations: provider routing restricted to no-retention/no-training providers for confidential projects; PII masking option; minimal context per call (element catalogs, not full pages).
-- **LLM choice (justification):** the chat models are Groq-hosted `gpt-oss-120b` (planning, authoring, extraction) and `gpt-oss-20b` (high-volume exploration steps), chosen after measurement: 0.5–1.3 s per call, correct tool calling, strict JSON-schema output, and generous rate limits — fast enough for multi-agent runs, which free-tier models (~10 s/call) were not. Chat and embeddings are separate OpenAI-compatible endpoints, so the identical code runs against a **self-hosted** server (vLLM/Ollama) for confidential deployments, including embeddings. The documented trade-off: smaller self-hosted models reduce extraction, mapping and tool-use quality; the deterministic explorer and rule-based generators keep the system useful in that mode.
-- **Free models and confidentiality:** free-tier models cannot honor no-retention/no-training routing (verified), so they are suitable only for demo applications and non-confidential BRDs. A project marked `confidential` forces strict provider routing and refuses free models; for genuinely sensitive material use a paid zero-retention route or a self-hosted model (chat and embeddings).
+- **LLM choice (justification):** the chat models are Groq-hosted `gpt-oss-120b` (planning, authoring, extraction) and `gpt-oss-20b` (high-volume exploration steps), chosen after measurement: 0.5–1.3 s per call, correct tool calling, strict JSON-schema output, and generous rate limits - fast enough for multi-agent runs, which free-tier models (~10 s/call) were not. Chat and embeddings are separate OpenAI-compatible endpoints, configured by API key.
+- **Free models and confidentiality:** free-tier models cannot honor no-retention/no-training routing (verified), so they are suitable only for demo applications and non-confidential BRDs. A project marked `confidential` forces strict provider routing and refuses free models; for genuinely sensitive material use a paid zero-retention route.
 - **Environment safety:** the app URL must be a test/staging environment; a project-level acknowledgement is required, and safe mode is on by default.
 
 ## 11. Configuration

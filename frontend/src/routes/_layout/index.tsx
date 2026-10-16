@@ -39,7 +39,7 @@ const NEXT_TEXT: Record<string, string> = {
   mapping: "Map requirements to screens",
   tests: "Generate test cases",
   review: "Review and approve test cases",
-  done: "All cases approved — export them",
+  done: "All cases approved - export them",
 }
 
 const KIND_LABEL: Record<string, string> = {

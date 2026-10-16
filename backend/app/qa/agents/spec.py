@@ -21,6 +21,7 @@ BROWSER = {
     "browser_click",
     "browser_fill",
     "browser_select",
+    "browser_advance",
     "browser_press",
     "browser_navigate",
     "browser_back",

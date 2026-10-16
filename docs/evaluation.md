@@ -24,13 +24,15 @@ What was measured, how, what worked, what did not, and what is **not** known. Re
 
 ## 2. Targets from the PRD, and where we are
 
+*This table is from the first four apps and an earlier generation; the final numbers for all seven apps are in §6b.*
+
 | Metric | Target | Template app | Juice Shop | Redmine | Gitea |
 |---|---|---|---|---|---|
 | Requirement coverage (testable, non-flagged, with ≥1 case) | ≥ 90% | **60%** (9/15) | **61%** (17/28) | **70%** (19/27) | **80%** (20/25) |
 | Hallucinated steps (named control absent from the recorded app) | 0 | 0 / 139 | 0 / 89 | 0 / 215 | 0 / 298 |
 | Executable on the live app (replay, ≤80 cases sampled) | ≥ 90% | **65%** (22/34) | **95%** (56/59) | **99%** (79/80) | **86%** (69/80) |
 | Duplicate cases (structural) | ≤ 5% | 0% | 0% | 2.6% | 1.3% |
-| Business relevance (QA rating ≥ 4.0, ≥ 30 cases) | ≥ 4.0 | not measured | not measured | not measured | not measured |
+| Business relevance (QA rating ≥ 4.0, ≥ 30 cases) | ≥ 4.0 | AI proxy 3.31 | AI proxy 3.17 | AI proxy 2.80 | AI proxy 3.07 |
 | Mapping precision / recall vs hand labels | ≥ 0.8 | n/a | 0.86 / 0.92 | n/a | n/a |
 
 Verdicts:
@@ -183,6 +185,41 @@ a wizard's later steps and a delete confirmation page are never reached because 
 destructive link (safe mode, by design); LeaveTrack's replay rate is understated because some authored cases
 check that a role does **not** see a control, so "control not found" is their expected result.
 
+## 6b. Final measurements on all seven apps, and the gap-closing features
+
+Measured after the last regeneration. "Judge" is an **AI rubric score (1-5) of a 30-case stratified sample,
+a proxy and not a human rating** (`scripts/evaluate.py --judge`).
+
+| App | Coverage (testable) | Cases | Ungrounded steps | Duplicates | Executable (replay) | Judge mean |
+|---|---|---|---|---|---|---|
+| Template app | 53% (15 testable) | 26 | 0/101 | 0% | 46% (12/26)* | 3.31 |
+| Juice Shop | 57% | 42 | 0/55 | 0% | 88% (37/42) | 3.17 |
+| Redmine | 70% | 94 | 0/184 | 0% | 97% (58/60) | 2.80 |
+| Gitea | 80% | 70 | 0/101 | 0% | 90% (54/60) | 3.07 |
+| LeaveTrack | 54% | 56 | 0/129 | 0% | 84% (47/56) | 3.47 |
+| Stockroom | 76% | 71 | 0/165 | 0% | 90% (64/71) | 3.30 |
+| HelpDesk | 91% | 53 | 0/71 | 0% | 93% (49/53) | 3.03 |
+
+\* The template app's crawl predates a UI redesign that removed its "Items" page, so most failures are
+`control 'Items' not found`: the model is stale, not wrong at generation time. Re-crawl before trusting it.
+Replay also understates LeaveTrack (cases that say a role "does not see" a control).
+
+Honest reading: grounding and duplicates are met everywhere; the executable rate meets 90% on four of
+seven; **coverage meets 90% on one of seven**; the judge proxy is **below the 4.0 target on every app**
+and, being an AI, says nothing certain about what a QA lead would rate.
+
+Features added to close gaps from the assignment:
+
+- **Cost**: estimated dollars per run in the Metrics tab from `LLM_PRICE_*` (estimate; embeddings excluded).
+- **Glossary and OpenAPI/Swagger**: uploaded per project; the glossary improves extraction/mapping/authoring
+  context; API constraints enrich form fields in memory (evidence `from_api_spec`). On LeaveTrack 3 cases
+  carried API rules and the sign-in form was correctly left alone.
+- **Diagrams in a BRD**: images are OCR'd into a "Diagrams" block with a warning that arrows and layout are
+  not interpreted. Tested on rendered images only.
+- **Multi-step forms**: opt-in `walk_wizards`; fixture wizard crawled and replayed (4 tests). Not yet
+  re-crawled on Stockroom's real wizard.
+- **Settings UI**: crawl and generation options in a dialog. Not verified end to end in a browser.
+
 ## 7. Cost and time
 
 Reported by the Metrics tab (time and provider-reported tokens). Typical runs with Groq `gpt-oss-120b`:
@@ -220,10 +257,12 @@ Redmine and Gitea answer in hundreds of milliseconds per page.
 - Confluence import is verified against a mocked API only.
 - OCR is verified on a rendered scan only. Messy BRDs are unmeasured; English only.
 - Groq's data-retention terms for confidential BRDs were not verified; the `confidential` flag refuses
-  free-tier models but does not make a hosted provider private. A self-hosted endpoint is the answer.
+  free-tier models but does not make a hosted provider private.
 - Free-tier embeddings are rate-limited; retrieval falls back to keywords and near-duplicate detection to
   exact matching.
 - Jira Cloud / TestRail / Zephyr Scale integration is built (bring-your-own-key) but only exercised against mocked platform APIs and a TestRail stand-in; no real account has been used, so field mappings (custom fields, required fields, workflows) may need adjusting per instance.
+- Business relevance has never been rated by a human; the only figure is the AI proxy above.
+- Diagram OCR reads labels, not arrows; wizard walking is opt-in and fixture-tested.
 - Single-user deployment assumptions.
 
 ## 10. Reproduce

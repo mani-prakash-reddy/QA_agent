@@ -1,0 +1,105 @@
+{
+  "document": "template-app",
+  "requirements": [
+    {
+      "key": "REQ-1",
+      "type": "functional",
+      "match": "sign up",
+      "flagged": false
+    },
+    {
+      "key": "REQ-2",
+      "type": "validation",
+      "match": "between 8 and 128",
+      "flagged": false
+    },
+    {
+      "key": "REQ-3",
+      "type": "functional",
+      "match": "log in",
+      "flagged": false
+    },
+    {
+      "key": "REQ-4",
+      "type": "functional",
+      "match": "password recovery",
+      "flagged": false
+    },
+    {
+      "key": "REQ-5",
+      "type": "functional",
+      "match": "change their own password",
+      "flagged": false
+    },
+    {
+      "key": "REQ-6",
+      "type": "functional",
+      "match": "delete their own account",
+      "flagged": false
+    },
+    {
+      "key": "REQ-7",
+      "type": "functional",
+      "match": "create an item",
+      "flagged": false
+    },
+    {
+      "key": "REQ-8",
+      "type": "validation",
+      "match": "255 characters",
+      "flagged": false
+    },
+    {
+      "key": "REQ-9",
+      "type": "functional",
+      "match": "edit and delete their own items",
+      "flagged": false
+    },
+    {
+      "key": "REQ-10",
+      "type": "business_rule",
+      "match": "only their own items",
+      "flagged": false
+    },
+    {
+      "key": "REQ-11",
+      "type": "functional",
+      "match": "share an item",
+      "flagged": false
+    },
+    {
+      "key": "REQ-12",
+      "type": "functional",
+      "match": "add, edit and delete users",
+      "flagged": false
+    },
+    {
+      "key": "REQ-13",
+      "type": "functional",
+      "match": "Admin page",
+      "flagged": false
+    },
+    {
+      "key": null,
+      "type": "nfr",
+      "match": "responsive and pleasant",
+      "flagged": true
+    }
+  ],
+  "known_gaps_vs_app": {
+    "requirements_without_feature": [
+      "REQ-11 sharing items"
+    ],
+    "features_not_in_brd": []
+  },
+  "acceptable_extras": [
+    {
+      "match": "Admin",
+      "why": "role row"
+    },
+    {
+      "match": "User",
+      "why": "role row"
+    }
+  ]
+}

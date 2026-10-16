@@ -174,8 +174,15 @@ async def login(
             await page.goto(url, wait_until="domcontentloaded", timeout=20000)
         except Exception as exc:
             if i == len(candidates) - 1:
+                hint = ""
+                if urlsplit(target_url).hostname in ("localhost", "127.0.0.1", "::1"):
+                    hint = (
+                        ". The crawler runs inside a container, where localhost is the container itself:"
+                        " use the app's compose service name (e.g. http://demo-leave:3000) or"
+                        " http://host.docker.internal:<port>"
+                    )
                 raise AuthError(
-                    f"could not open the login page ({type(exc).__name__})"
+                    f"could not open the login page ({type(exc).__name__}){hint}"
                 ) from exc
             continue
         await settle()

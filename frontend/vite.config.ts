@@ -15,6 +15,17 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
+  server: {
+    // Accept requests for tunnelled hostnames (ngrok etc.).
+    allowedHosts: true,
+    // Same-origin API: lets one tunnel on the frontend serve the backend too.
+    proxy: {
+      "/api": {
+        target: process.env.BACKEND_URL ?? "http://localhost:8000",
+        changeOrigin: true,
+      },
+    },
+  },
   plugins: [
     tanstackRouter({
       target: "react",

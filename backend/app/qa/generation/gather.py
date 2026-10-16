@@ -29,6 +29,9 @@ class FormCtx:
     needs_rows: bool = (
         False  # a click on the path is a per-row control: a row must exist first
     )
+    api_source: dict[uuid.UUID, str] = field(
+        default_factory=dict
+    )  # field id -> API operation whose rules were added to what the screen shows
 
     @property
     def opener(self) -> str | None:

@@ -9,6 +9,7 @@ from sqlmodel import col, select
 from app.api.deps import CurrentUser, SessionDep
 from app.api.routes.mapping import _current_snapshot, _gaps
 from app.api.routes.projects import get_owned_project
+from app.core.config import settings
 from app.qa.config import TEMPLATE_COLUMNS, GenerationConfig, TemplateColumn
 from app.qa.exports import build, files
 from app.qa.models import Run
@@ -179,9 +180,23 @@ def metrics(
         k.seconds += secs or 0.0
         k.input_tokens += tin
         k.output_tokens += tout
+    tin_all = sum(k.input_tokens for k in agg.values())
+    tout_all = sum(k.output_tokens for k in agg.values())
+    pin, pout = settings.LLM_PRICE_INPUT_PER_M, settings.LLM_PRICE_OUTPUT_PER_M
+
+    def cost(i: int, o: int) -> float:
+        return round((i * pin + o * pout) / 1_000_000, 4)
+
+    for m in out:
+        m.cost_usd = cost(m.input_tokens, m.output_tokens)
+    for k in agg.values():
+        k.cost_usd = cost(k.input_tokens, k.output_tokens)
     return MetricsPublic(
         by_kind=sorted(agg.values(), key=lambda k: k.kind),
         runs=out[:50],
-        input_tokens=sum(k.input_tokens for k in agg.values()),
-        output_tokens=sum(k.output_tokens for k in agg.values()),
+        input_tokens=tin_all,
+        output_tokens=tout_all,
+        price_input_per_m=pin,
+        price_output_per_m=pout,
+        cost_usd=cost(tin_all, tout_all),
     )

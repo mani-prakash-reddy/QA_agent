@@ -69,18 +69,24 @@ each target.
 2. **Roles**: add each user role of the app with its test credentials (write-only; stored encrypted). A
    role can sign in with a password, a password plus an authenticator secret, a password plus a code you
    type when the run asks (the run page shows a prompt), or a saved browser session (for CAPTCHA/SSO).
-3. **Requirements**: upload the BRD (PDF, scanned PDF, Word, Markdown, text) or import a Confluence page.
+3. **Requirements**: optionally add *Reference documents* (a glossary and an OpenAPI/Swagger file; they sharpen mapping and field rules). Upload the BRD (PDF, scanned PDF, Word, Markdown, text) or import a Confluence page.
    Review the extracted requirements;
    vague ones are flagged and need a decision before approval.
 4. **Crawl**: explores the app once per role (read-only) and records screens, forms, fields, paths, masked
    table headers and captions, and what each role gets when it opens another role's screens by address.
-   Settings: deterministic (default) or agentic explorer, forbidden-route probing, text capture.
+   Settings (the *Settings* button on the Crawl and Test cases tabs): depth, screen and step limits, parallel
+   agents, deterministic or agentic explorer, include/exclude modules, seeds, forbidden-route probing, text
+   capture, opt-in walking of multi-step forms, test types, cases per requirement.
 5. **Mapping**: links requirements to screens with evidence; shows requirement gaps and screens no
    requirement mentions; confirm, reject or link by hand.
 6. **Test cases**: generate, review (edit, history, bulk approve, regenerate with feedback), see the
    **Traceability matrix**, **Export** (Excel/CSV/JSON) and set the **Template** (columns, names, IDs).
 7. **Integrations** (sidebar): save your own Jira Cloud, TestRail or Zephyr Scale key once (encrypted, write-only); then **Push to…** on a project's Test cases tab sends the approved cases there (preview first; pushed cases are updated, not duplicated).
-8. **Metrics**: time and tokens per kind of run.
+8. **Metrics**: time, tokens and an estimated dollar cost per kind of run (`LLM_PRICE_*`; embeddings excluded).
+
+What is sent to which provider,: [docs/privacy.md](docs/privacy.md).
+Sample exports for seven apps: `docs/samples/` (regenerate with `scripts/export_samples.py`); an AI-judge
+relevance proxy: `scripts/evaluate.py --judge`.
 
 ## Development
 
@@ -95,11 +101,39 @@ uv run ruff check app && uv run mypy app           # strict on app code
 - Evaluation and replay scripts: `backend/scripts/` (`run_pipeline.py`, `evaluate.py`, `compare_explorers.py`, `eval_mapping.py`, `eval_brd_extraction.py`,
   `replay_cases.py`).
 
-## Limits worth knowing first
 
-The crawler never submits forms, so many expected results are *inferred* and marked so. Mapping and test
-quality are bounded by what a bounded crawl recorded: requirement coverage measured 60-80% across four
-demo apps (target 90%), and the agentic explorer found no more than the deterministic one at far higher
-cost. CAPTCHA is refused, never solved. Confluence import and real-world scans are verified against mocks
-and rendered scans only. The Jira/TestRail/Zephyr push has only been tried against mocks. Details and numbers:
-[docs/evaluation.md](docs/evaluation.md).
+## Appendix: what has been achieved
+
+**Pipeline, end to end.** BRD in (PDF, scanned PDF, Word, Markdown, text, Confluence page, optional glossary and
+OpenAPI file) -> grounded requirement extraction with verbatim quotes and ambiguity flags -> a read-only crawl of
+the live application once per role -> a knowledge model (screens, forms, fields, paths, role access, graph
+projection) -> requirement-to-screen mapping with two-way gaps -> grounded test cases (positive, negative,
+boundary, role access, business rule, end to end) -> traceability matrix, Excel/CSV/JSON export with a
+configurable template, review workflow, and push to Jira Cloud, TestRail or Zephyr Scale with your own key.
+
+**Agentic architecture.** A supervisor plans the crawl from scouts' measurements and spawns explorers sized to
+the app's complexity. Every agent's screens, actions and log are visible live in the UI, with pause, stop and
+feed controls. A deterministic explorer is the default; the agentic one is optional.
+
+**Safety.** Credentials are encrypted at rest and never reach a model or a log. Safe mode blocks destructive
+actions and form submits. Login handles passwords, authenticator codes, typed one-time codes and stored sessions;
+CAPTCHA is refused, never solved.
+
+**Also built.** Dashboard and workflow step bar, settings dialog for crawl and generation options, run metrics
+with time, tokens and an estimated dollar cost, OCR for scans and diagrams, wizard walking (opt-in), five demo
+targets with answer keys, sample exports in `docs/samples/`.
+
+**Measured on seven apps** (full table and caveats in [docs/evaluation.md](docs/evaluation.md)):
+
+| Measure | Result | Target |
+|---|---|---|
+| Steps naming a control absent from the recorded app | 0 of about 800 | 0 |
+| Duplicate cases | 0% | at most 5% |
+| Executable on the live app (replay) | 84-97% (template app 46%, stale crawl) | 90% |
+| Requirement coverage | 53-91%, target met on 1 of 7 | 90% |
+| Business relevance | AI-judge proxy 2.8-3.5 of 5; no human rating | 4.0 |
+| BRD extraction on the purpose-built apps | 25/25, 24/24, 22/22 requirements, flags correct | n/a |
+
+**Not achieved or not verified.** Coverage and relevance are below target. Jira, TestRail and Zephyr pushes were
+only run against mocks. Wizard walking and diagram OCR are tested on fixtures and rendered images only. Groq's
+data-retention terms are unverified. Sources of truth: `dev_docs/STATUS.md`, `docs/evaluation.md`.

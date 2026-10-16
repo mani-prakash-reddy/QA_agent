@@ -15,6 +15,7 @@ import { MetricsPanel } from "@/components/Projects/MetricsPanel"
 import { ModelPanel } from "@/components/Projects/ModelPanel"
 import { RolesPanel } from "@/components/Projects/RolesPanel"
 import { RunsPanel } from "@/components/Projects/RunsPanel"
+import { ReferencePanel } from "@/components/Requirements/ReferencePanel"
 import { RequirementsPanel } from "@/components/Requirements/RequirementsPanel"
 import { TestsPanel } from "@/components/Tests/TestsPanel"
 import { Badge } from "@/components/ui/badge"
@@ -51,7 +52,10 @@ const STEPS: Step[] = [
     key: "requirements",
     label: "Requirements",
     hint: "The BRD",
-    tabs: [{ value: "requirements", label: "Requirements" }],
+    tabs: [
+      { value: "requirements", label: "Requirements" },
+      { value: "reference", label: "Reference documents" },
+    ],
   },
   {
     key: "crawl",
@@ -88,7 +92,7 @@ const NEXT_TEXT: Record<string, string> = {
   mapping: "Map requirements to screens",
   tests: "Generate test cases",
   review: "Review and approve the test cases",
-  done: "Everything is approved — export the cases",
+  done: "Everything is approved - export the cases",
 }
 const NEXT_TAB: Record<string, string> = {
   roles: "roles",
@@ -250,6 +254,9 @@ function ProjectPage() {
         </TabsContent>
         <TabsContent value="requirements">
           <RequirementsPanel projectId={projectId} />
+        </TabsContent>
+        <TabsContent value="reference">
+          <ReferencePanel projectId={projectId} />
         </TabsContent>
         <TabsContent value="crawl">
           <RunsPanel projectId={projectId} />

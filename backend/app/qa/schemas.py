@@ -12,8 +12,8 @@ class ProjectCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=2000)
     target_base_url: str
-    # Must be explicitly true: the target must be a test/staging environment.
-    environment_ack: bool
+    # The target must be a test/staging environment; the project dialog states it, so it defaults to true.
+    environment_ack: bool = True
     confidential: bool = False
     crawl_config: CrawlConfig = Field(default_factory=CrawlConfig)
     generation_config: GenerationConfig = Field(default_factory=GenerationConfig)
@@ -625,6 +625,7 @@ class RunMetric(BaseModel):
     input_tokens: int
     output_tokens: int
     created_at: datetime
+    cost_usd: float = 0.0
 
 
 class KindMetric(BaseModel):
@@ -633,6 +634,7 @@ class KindMetric(BaseModel):
     seconds: float
     input_tokens: int
     output_tokens: int
+    cost_usd: float = 0.0
 
 
 class MetricsPublic(BaseModel):
@@ -640,3 +642,7 @@ class MetricsPublic(BaseModel):
     runs: list[RunMetric]
     input_tokens: int
     output_tokens: int
+    # An estimate: tokens x the configured list prices (embeddings are not included)
+    price_input_per_m: float = 0.0
+    price_output_per_m: float = 0.0
+    cost_usd: float = 0.0

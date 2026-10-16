@@ -1,0 +1,77 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "LeaveTrack API", "version": "1.0"},
+  "paths": {
+    "/api/leave": {
+      "post": {
+        "summary": "Request leave",
+        "tags": ["leave"],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/LeaveRequest"}}}},
+        "responses": {"200": {"description": "created"}, "422": {"description": "a rule was broken"}}
+      },
+      "get": {"summary": "List my leave requests and my balance", "tags": ["leave"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/api/team/{id}/decision": {
+      "post": {
+        "summary": "Approve or reject a team leave request",
+        "tags": ["approvals"],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Decision"}}}},
+        "responses": {"200": {"description": "decided"}, "422": {"description": "a rejection needs a comment"}}
+      }
+    },
+    "/api/employees": {
+      "post": {
+        "summary": "Add an employee",
+        "tags": ["employees"],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Employee"}}}},
+        "responses": {"200": {"description": "added"}, "422": {"description": "a rule was broken"}}
+      },
+      "get": {"summary": "List employees", "tags": ["employees"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/api/policies": {
+      "put": {
+        "summary": "Save the leave policies",
+        "tags": ["policies"],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Policies"}}}},
+        "responses": {"200": {"description": "saved"}, "422": {"description": "a value is out of range"}}
+      }
+    },
+    "/api/reports": {"get": {"summary": "Leave taken by type and by department", "tags": ["reports"], "responses": {"200": {"description": "ok"}}}}
+  },
+  "components": {
+    "schemas": {
+      "LeaveRequest": {
+        "type": "object",
+        "required": ["type", "from", "to"],
+        "properties": {
+          "type": {"type": "string", "enum": ["Annual", "Sick", "Unpaid", "Parental"]},
+          "from": {"type": "string", "format": "date"},
+          "to": {"type": "string", "format": "date"},
+          "reason": {"type": "string", "maxLength": 200}
+        }
+      },
+      "Decision": {
+        "type": "object",
+        "required": ["decision"],
+        "properties": {"decision": {"type": "string", "enum": ["Approved", "Rejected"]}, "comment": {"type": "string", "minLength": 5}}
+      },
+      "Employee": {
+        "type": "object",
+        "required": ["name", "email", "department"],
+        "properties": {
+          "name": {"type": "string", "maxLength": 60},
+          "email": {"type": "string", "format": "email"},
+          "department": {"type": "string", "enum": ["Engineering", "Sales", "Finance", "Support"]}
+        }
+      },
+      "Policies": {
+        "type": "object",
+        "properties": {
+          "annual_days": {"type": "integer", "minimum": 0, "maximum": 60},
+          "carry_over_max": {"type": "integer", "minimum": 0, "maximum": 10},
+          "min_notice_days": {"type": "integer", "minimum": 0, "maximum": 30}
+        }
+      }
+    }
+  }
+}

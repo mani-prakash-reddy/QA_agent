@@ -44,7 +44,7 @@ export function StateSheet({
           <SheetTitle>{s?.title ?? "Loading…"}</SheetTitle>
           <SheetDescription>
             {s
-              ? `${s.kind} · ${s.route_template ?? ""} · seen by ${s.roles.join(", ") || "—"}`
+              ? `${s.kind} · ${s.route_template ?? ""} · seen by ${s.roles.join(", ") || "-"}`
               : ""}
           </SheetDescription>
         </SheetHeader>

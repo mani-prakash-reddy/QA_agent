@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "openai/gpt-oss-120b"
     LLM_MODEL_FAST: str = "openai/gpt-oss-20b"
 
+    # List prices (USD per million tokens) used to ESTIMATE what a run cost. They are not read from the
+    # provider: set them to your provider's current price for LLM_MODEL (defaults: Groq gpt-oss-120b).
+    LLM_PRICE_INPUT_PER_M: float = 0.15
+    LLM_PRICE_OUTPUT_PER_M: float = 0.75
+
     # Embeddings (OpenAI-compatible endpoint, e.g. OpenRouter)
     EMBEDDING_BASE_URL: str | None = None
     EMBEDDING_API_KEY: SecretStr | None = None

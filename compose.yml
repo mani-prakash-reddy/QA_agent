@@ -132,6 +132,8 @@ services:
       EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-liquid/lfm-2.5-embedding-350m:free}
       EMBEDDING_DIM: ${EMBEDDING_DIM:-1536}
+      LLM_PRICE_INPUT_PER_M: ${LLM_PRICE_INPUT_PER_M:-0.15}
+      LLM_PRICE_OUTPUT_PER_M: ${LLM_PRICE_OUTPUT_PER_M:-0.75}
       AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
       AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2024-12-01-preview}
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:-}
@@ -159,7 +161,9 @@ services:
       - "5173:5173"
     environment:
       # Used by the browser, so it must be reachable from the host.
-      VITE_API_URL: http://localhost:8000
+      # Set VITE_API_URL= (empty) in .env to use same-origin /api via the Vite proxy (ngrok).
+      VITE_API_URL: ${VITE_API_URL-http://localhost:8000}
+      BACKEND_URL: http://backend:8000
     develop:
       watch:
         - path: ./frontend

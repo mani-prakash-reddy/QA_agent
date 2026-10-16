@@ -25,8 +25,6 @@ export function CreateProject() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [url, setUrl] = useState("")
-  const [ack, setAck] = useState(false)
-  const [confidential, setConfidential] = useState(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -37,8 +35,6 @@ export function CreateProject() {
         body: {
           name,
           target_base_url: url,
-          environment_ack: ack,
-          confidential,
         },
       }),
     onSuccess: ({ data }) => {
@@ -50,7 +46,7 @@ export function CreateProject() {
     onError: handleError.bind(showErrorToast),
   })
 
-  const valid = name.trim() && url.trim() && ack
+  const valid = name.trim() && url.trim()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -65,7 +61,8 @@ export function CreateProject() {
           <DialogTitle>New project</DialogTitle>
           <DialogDescription>
             A project points at one application under test and holds its roles,
-            runs and knowledge model.
+            runs and knowledge model. Point it at a test or staging environment,
+            never production.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -93,29 +90,6 @@ export function CreateProject() {
               placeholder="https://staging.example.com"
             />
           </div>
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={ack}
-              onChange={(e) => setAck(e.target.checked)}
-            />
-            <span>
-              This is a test or staging environment, never production.
-            </span>
-          </label>
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={confidential}
-              onChange={(e) => setConfidential(e.target.checked)}
-            />
-            <span>
-              Confidential: refuse free-tier models, because they may use
-              prompts for training.
-            </span>
-          </label>
           <DialogFooter>
             <DialogClose asChild>
               <Button

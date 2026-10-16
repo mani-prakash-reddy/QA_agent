@@ -1,0 +1,119 @@
+{
+  "note": "Written by the developer from the app's source: the screens are the ones a complete crawl reaches. `expect` = match | gap; `ambiguous` requirements are not scored.",
+  "snapshot": "helpdesk test app, complete crawl",
+  "requirements": {
+    "FR-1": {
+      "expect": "match",
+      "screens": [
+        "#/login|"
+      ]
+    },
+    "FR-2": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-3": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "FR-4": {
+      "expect": "match",
+      "screens": [
+        "#/tickets|"
+      ]
+    },
+    "FR-5": {
+      "expect": "match",
+      "screens": [
+        "#/tickets|",
+        "#/tickets?status|"
+      ]
+    },
+    "FR-6": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/new|"
+      ]
+    },
+    "BR-1": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/new|"
+      ]
+    },
+    "BR-2": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/new|"
+      ]
+    },
+    "BR-3": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/new|"
+      ]
+    },
+    "FR-7": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/:id|"
+      ]
+    },
+    "FR-8": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/:id|"
+      ]
+    },
+    "FR-9": {
+      "expect": "match",
+      "screens": [
+        "#/tickets/:id|"
+      ]
+    },
+    "FR-10": {
+      "expect": "gap"
+    },
+    "FR-11": {
+      "ambiguous": true,
+      "why": "Vague by design"
+    },
+    "FR-12": {
+      "expect": "match",
+      "screens": [
+        "#/kb|"
+      ]
+    },
+    "FR-13": {
+      "expect": "match",
+      "screens": [
+        "#/sla|"
+      ]
+    },
+    "BR-4": {
+      "expect": "match",
+      "screens": [
+        "#/sla|"
+      ]
+    },
+    "FR-14": {
+      "expect": "match",
+      "screens": [
+        "#/users|"
+      ]
+    },
+    "FR-15": {
+      "expect": "gap"
+    },
+    "FR-16": {
+      "ambiguous": true,
+      "why": "An access rule, a session rule or a menu action: needs the role matrix or a behaviour, not a screen"
+    },
+    "NFR-2": {
+      "expect": "gap"
+    }
+  },
+  "undocumented_screens": {
+    "routes": []
+  }
+}

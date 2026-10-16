@@ -51,6 +51,9 @@ class PendingVia:
     kind: str  # element kind that was clicked
     region: str = "main"  # nav/header/footer = app shell
     in_row: bool = False
+    fills: list[dict[str, str]] = field(
+        default_factory=list
+    )  # typed before the click (wizard step)
 
 
 @dataclass
@@ -83,6 +86,7 @@ class CrawlSession:
     current_state_id: uuid.UUID | None = None
     page_state_id: uuid.UUID | None = None
     pending_via: PendingVia | None = None
+    pending_fills: list[dict[str, str]] = field(default_factory=list)
     depth_hint: int = 0
 
     def __post_init__(self) -> None:
@@ -201,7 +205,12 @@ class CrawlSession:
                 else ("tab" if kind == "tab" else "navigation")
             )
             await self.rec.record_transition(
-                via.from_state_id, rec.state_id, via.label, via.key, kind=tkind
+                via.from_state_id,
+                rec.state_id,
+                via.label,
+                via.key,
+                kind=tkind,
+                fills=via.fills,
             )
         self.pending_via = None
         self.current_state_id = rec.state_id

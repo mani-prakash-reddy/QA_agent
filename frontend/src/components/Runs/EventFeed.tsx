@@ -173,7 +173,7 @@ export function describe(e: RunEvent): Row | null {
           icon: "◉",
           tone: "text-violet-600 dark:text-violet-400",
           text: "Structure understood",
-          sub: `pages per role — ${per}; ${p.shared} shared by every role`,
+          sub: `pages per role - ${per}; ${p.shared} shared by every role`,
         }
       }
       if (p.status === "plan_ready") {
@@ -205,7 +205,7 @@ export function describe(e: RunEvent): Row | null {
           icon: "◎",
           tone: "text-violet-600 dark:text-violet-400",
           text: missed
-            ? `Coverage report: pages still missing — ${missed}`
+            ? `Coverage report: pages still missing - ${missed}`
             : "Coverage report: every scouted page was explored",
         }
       }

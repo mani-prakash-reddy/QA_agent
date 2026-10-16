@@ -4,6 +4,7 @@ import { CheckCheck, Sparkles } from "lucide-react"
 import { useState } from "react"
 
 import { TestsService } from "@/client"
+import { ProjectSettingsDialog } from "@/components/Projects/ProjectSettingsDialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -148,6 +149,7 @@ export function TestsPanel({ projectId }: { projectId: string }) {
           drafts and keeps anything you approved.
         </p>
         <div className="flex gap-2">
+          <ProjectSettingsDialog projectId={projectId} />
           {has && <TemplateDialog projectId={projectId} />}
           {has && <ExportMenu projectId={projectId} />}
           {has && <PushDialog projectId={projectId} />}
@@ -344,7 +346,7 @@ export function TestsPanel({ projectId }: { projectId: string }) {
                         <PriorityBadge p={t.priority} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        {t.role_name ?? "—"}
+                        {t.role_name ?? "-"}
                       </TableCell>
                       <TableCell>
                         <StatusBadge s={t.status} />

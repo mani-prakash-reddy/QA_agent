@@ -135,11 +135,11 @@ function LinkDialog({
         ).values(),
       ].map((s) => ({
         id: s.id,
-        label: `${s.title || "(untitled)"} — ${s.route_template ?? s.kind}`,
+        label: `${s.title || "(untitled)"} - ${s.route_template ?? s.kind}`,
       }))
     : (reqs?.data ?? [])
         .filter((r) => r.review_status !== "rejected")
-        .map((r) => ({ id: r.id, label: `${r.req_key} — ${r.title}` }))
+        .map((r) => ({ id: r.id, label: `${r.req_key} - ${r.title}` }))
 
   const link = useMutation({
     mutationFn: () =>

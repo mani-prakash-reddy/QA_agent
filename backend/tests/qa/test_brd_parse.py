@@ -205,3 +205,56 @@ def test_pdf_ligatures_are_expanded() -> None:
     from app.qa.brd.parse import unligature
 
     assert unligature("notiﬁed ﬂow oﬃce") == "notified flow office"
+
+
+def _flow_chart_png() -> bytes:
+    """An image of a flow chart: only its box labels exist, as pixels."""
+    import pymupdf
+
+    page = pymupdf.open().new_page(width=520, height=260)
+    for i, label in enumerate(
+        [
+            "Customer places order",
+            "Warehouse packs order",
+            "Courier ships order",
+            "Customer receives parcel",
+        ]
+    ):
+        page.draw_rect(pymupdf.Rect(20, 20 + i * 55, 400, 60 + i * 55), width=1.5)
+        page.insert_text((30, 47 + i * 55), label, fontsize=16)
+    return page.get_pixmap(dpi=150).tobytes("png")
+
+
+def test_diagram_text_in_a_pdf_is_read_with_ocr() -> None:
+    import pymupdf
+
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text((72, 80), "1. Order flow", fontsize=18)
+    page.insert_text(
+        (72, 110), "FR-1: Orders shall follow the flow below.", fontsize=11
+    )
+    page.insert_image(pymupdf.Rect(72, 130, 472, 330), stream=_flow_chart_png())
+    parsed = parse_bytes(doc.tobytes(), "x.pdf")
+    text = " ".join(b.text for b in parsed.blocks).lower()
+    assert (
+        "diagram on page 1" in text
+        and "warehouse packs order" in text
+        and "courier ships order" in text
+    )
+    assert any("diagram" in w and "arrows" in w for w in parsed.warnings)
+
+
+def test_diagram_text_in_a_docx_is_read_with_ocr(tmp_path: Path) -> None:
+    from docx import Document
+
+    png = tmp_path / "flow.png"
+    png.write_bytes(_flow_chart_png())
+    d = Document()
+    d.add_heading("Order flow", 1)
+    d.add_paragraph("FR-1: Orders shall follow the flow below.")
+    d.add_picture(str(png))
+    out = tmp_path / "x.docx"
+    d.save(out)
+    parsed = parse_bytes(out.read_bytes(), "x.docx")
+    assert "warehouse packs order" in " ".join(b.text for b in parsed.blocks).lower()

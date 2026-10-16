@@ -1,0 +1,138 @@
+{
+  "document": "helpdesk",
+  "note": "Expected requirements. `match` is a phrase that must appear in the extracted requirement. `flagged` = vague, must be flagged, not guessed.",
+  "requirements": [
+    {
+      "key": "FR-1",
+      "type": "functional",
+      "match": "sign in with an email address and a password",
+      "flagged": false
+    },
+    {
+      "key": "FR-2",
+      "type": "functional",
+      "match": "session shall expire after a period of inactivity",
+      "flagged": false
+    },
+    {
+      "key": "FR-3",
+      "type": "functional",
+      "match": "able to sign out",
+      "flagged": false
+    },
+    {
+      "key": "FR-4",
+      "type": "functional",
+      "match": "see only their own tickets",
+      "flagged": false
+    },
+    {
+      "key": "FR-5",
+      "type": "functional",
+      "match": "filter the ticket list by status",
+      "flagged": false
+    },
+    {
+      "key": "FR-6",
+      "type": "functional",
+      "match": "create a ticket with a subject, a category",
+      "flagged": false
+    },
+    {
+      "key": "BR-1",
+      "type": "business_rule",
+      "match": "ticket subject is required and at most 120 characters",
+      "flagged": false
+    },
+    {
+      "key": "BR-2",
+      "type": "business_rule",
+      "match": "description must be at least 20 characters",
+      "flagged": false
+    },
+    {
+      "key": "BR-3",
+      "type": "business_rule",
+      "match": "must have a category",
+      "flagged": false
+    },
+    {
+      "key": "FR-7",
+      "type": "functional",
+      "match": "status, priority, category, assignee and the whole conversation",
+      "flagged": false
+    },
+    {
+      "key": "FR-8",
+      "type": "functional",
+      "match": "add comments to a ticket they can see",
+      "flagged": false
+    },
+    {
+      "key": "FR-9",
+      "type": "functional",
+      "match": "change a ticket's status and assign it to themselves",
+      "flagged": false
+    },
+    {
+      "key": "FR-10",
+      "type": "functional",
+      "match": "rate the support they received",
+      "flagged": false
+    },
+    {
+      "key": "FR-11",
+      "type": "functional",
+      "match": "handling should be efficient",
+      "flagged": true
+    },
+    {
+      "key": "FR-12",
+      "type": "functional",
+      "match": "search the help articles by title",
+      "flagged": false
+    },
+    {
+      "key": "FR-13",
+      "type": "functional",
+      "match": "first-response target in hours for each priority",
+      "flagged": false
+    },
+    {
+      "key": "BR-4",
+      "type": "business_rule",
+      "match": "whole number of hours from 1 to 240",
+      "flagged": false
+    },
+    {
+      "key": "FR-14",
+      "type": "functional",
+      "match": "list of users with name, email and role",
+      "flagged": false
+    },
+    {
+      "key": "FR-15",
+      "type": "functional",
+      "match": "invite a new agent by email",
+      "flagged": false
+    },
+    {
+      "key": "FR-16",
+      "type": "functional",
+      "match": "Only admins shall see the SLA targets and Users pages",
+      "flagged": false
+    },
+    {
+      "key": null,
+      "type": "nfr",
+      "match": "pleasant to use",
+      "flagged": true
+    },
+    {
+      "key": "NFR-2",
+      "type": "nfr",
+      "match": "stored for at least 7 years",
+      "flagged": false
+    }
+  ]
+}

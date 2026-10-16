@@ -11,6 +11,7 @@ from app.api.routes import (
     mapping,
     private,
     projects,
+    references,
     requirements,
     runs,
     tests,
@@ -27,6 +28,7 @@ api_router.include_router(items.router)
 api_router.include_router(projects.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(integrations.router)
+api_router.include_router(references.router)
 api_router.include_router(runs.router)
 api_router.include_router(kb.router)
 api_router.include_router(brd.router)

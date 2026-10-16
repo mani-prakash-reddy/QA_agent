@@ -309,12 +309,12 @@ export function RequirementSheet({
                 <section className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <h3 className="font-semibold">Module</h3>
-                    <p className="text-muted-foreground">{r.module ?? "—"}</p>
+                    <p className="text-muted-foreground">{r.module ?? "-"}</p>
                   </div>
                   <div>
                     <h3 className="font-semibold">Roles</h3>
                     <p className="text-muted-foreground">
-                      {r.actors.length ? r.actors.join(", ") : "—"}
+                      {r.actors.length ? r.actors.join(", ") : "-"}
                     </p>
                   </div>
                 </section>
@@ -324,7 +324,7 @@ export function RequirementSheet({
             <section className="space-y-2">
               <h3 className="font-semibold">Source in the BRD</h3>
               <p className="text-xs text-muted-foreground">
-                {anchor.section || "—"}
+                {anchor.section || "-"}
                 {anchor.page ? ` · page ${anchor.page}` : ""}
               </p>
               {r.source_text ? (

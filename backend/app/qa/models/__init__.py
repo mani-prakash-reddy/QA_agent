@@ -1,4 +1,8 @@
-from app.qa.models.integrations import TestCaseExternal, UserIntegration
+from app.qa.models.integrations import (
+    ProjectReference,
+    TestCaseExternal,
+    UserIntegration,
+)
 from app.qa.models.knowledge import (
     AppSnapshot,
     FormField,
@@ -25,6 +29,7 @@ __all__ = [
     "FormField",
     "Gap",
     "Project",
+    "ProjectReference",
     "Requirement",
     "RequirementMapping",
     "RoleCredential",

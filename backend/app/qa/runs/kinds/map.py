@@ -23,6 +23,8 @@ from app.qa.mapping.gaps import (
 from app.qa.mapping.judge import PROMPT_VERSION, Judged, judge, verify
 from app.qa.mapping.retrieve import Candidate, Retriever
 from app.qa.models import AppSnapshot, Requirement, RequirementMapping, Run, UiState
+from app.qa.reference.glossary import expansion as glossary_expansion
+from app.qa.reference.load import load_refs_sync
 from app.qa.runs.context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -276,6 +278,7 @@ async def run_map(rc: RunContext) -> dict[str, Any]:
     stats = {"matched": 0, "weak": 0, "unmatched": 0, "not_ui": 0, "failed": 0}
     done = 0
     reported = {"in": 0, "out": 0}
+    refs = await asyncio.to_thread(load_refs_sync, rc.project.id)
 
     async def work(r: Requirement) -> None:
         nonlocal done
@@ -284,6 +287,9 @@ async def run_map(rc: RunContext) -> dict[str, Any]:
             query = " ".join(
                 [r.title, r.description, *[str(a) for a in r.acceptance_criteria]]
             )
+            gloss = refs.glossary_block(query)
+            if refs.terms:  # the business's own words for the same thing help retrieval
+                query += " " + glossary_expansion(refs.terms, query)
             qvec = (
                 [float(x) for x in r.embedding]
                 if r.embedding is not None and vectors
@@ -323,6 +329,7 @@ async def run_map(rc: RunContext) -> dict[str, Any]:
                             r.description,
                             r.acceptance_criteria,
                             found,
+                            context=gloss,
                         )
                         break
                     except Exception as exc:
@@ -362,6 +369,7 @@ async def run_map(rc: RunContext) -> dict[str, Any]:
                                 r.acceptance_criteria,
                                 found,
                                 second_look=True,
+                                context=gloss,
                             )
                             verdicts = verify(again, found)
                         except Exception:  # the first answer stands

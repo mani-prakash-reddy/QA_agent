@@ -77,7 +77,7 @@ export function RtmPanel({ projectId }: { projectId: string }) {
                   {Object.entries(r.by_type)
                     .filter(([, n]) => n > 0)
                     .map(([t, n]) => `${t.replace("_", " ")} ${n}`)
-                    .join(" · ") || "—"}
+                    .join(" · ") || "-"}
                 </TableCell>
                 <TableCell className="text-xs">
                   {r.approved} approved · {r.draft} draft

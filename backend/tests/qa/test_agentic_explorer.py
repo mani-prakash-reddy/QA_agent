@@ -114,7 +114,7 @@ def plan_handler(prompt: str) -> dict[str, Any]:
     for line in prompt.splitlines():
         if line.startswith("Role "):
             role = line.split()[1].rstrip(":")
-        elif line.startswith("  /") and " — " in line:
+        elif line.startswith("  /") and " - " in line:
             route = line.split()[0]
             if "[only:" in line or role == "Admin":
                 packages.append(

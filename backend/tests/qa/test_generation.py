@@ -945,3 +945,21 @@ def test_a_heading_is_not_a_control_the_author_may_press_or_type_in() -> None:
     )
     good, problems = ground(res, "FR-1", [c], set(), 5)
     assert [d.title for d in good] == ["fine"] and len(problems) == 2
+
+
+def test_access_rights_requirements_are_recognised_by_their_titles() -> None:
+    from app.qa.runs.kinds.generate import ACCESS_RE
+
+    for yes in (
+        "Clerk limited access",
+        "Admin full access",
+        "Customer access rights",
+        "Viewer permissions",
+    ):
+        assert ACCESS_RE.search(yes), yes
+    for no in (
+        "Create a product in three steps",
+        "Search products by name",
+        "Reject empty comment",
+    ):
+        assert not ACCESS_RE.search(no), no

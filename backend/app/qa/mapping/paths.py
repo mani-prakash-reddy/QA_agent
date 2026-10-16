@@ -12,6 +12,7 @@ from sqlmodel import Session, col, select
 from app.qa.models import Transition, UiElement, UiState
 
 Step = tuple[str, str]  # (label, element kind)
+NEXT_LABEL = re.compile(r"^(next( step)?|continue|proceed|review.*|forward)$", re.I)
 
 # A label that is somebody's data (e-mail, URL, date, id): a control named after it is not reproducible.
 DATA_LIKE = re.compile(r"@|https?://|\d{3,}|\d+[/.-]\d+[/.-]\d+")
@@ -34,6 +35,10 @@ class PathPlanner:
     adj: dict[uuid.UUID, list[tuple[uuid.UUID, str, str, bool]]] = field(
         default_factory=dict
     )  # from -> [(to, label, kind, in_row)]
+    stepped: set[uuid.UUID] = field(default_factory=set)
+    pre: dict[tuple[uuid.UUID, uuid.UUID, str], list[Step]] = field(
+        default_factory=dict
+    )  # what is typed before a click (a wizard step): kind "fill"/"select" steps
     edge_roles: dict[tuple[uuid.UUID, uuid.UUID, str], set[uuid.UUID]] = field(
         default_factory=dict
     )  # (from, to, label) -> roles that took that click
@@ -69,11 +74,15 @@ class PathPlanner:
                     if taken and role_id not in taken:
                         continue  # a click this role never had
                 seen.add(to)
-                nxt = [*path, (label, kind)]
+                nxt = [*path, *self.pre.get((cur, to, label), []), (label, kind)]
                 if to == state_id:
                     return nxt, rows or in_row
                 queue.append((to, nxt, rows or in_row))
         return None
+
+    def _stepped(self, state_id: uuid.UUID) -> bool:
+        """A later step of a multi-step form: its address opens the first step, not this one."""
+        return state_id in self.stepped
 
     def plan(
         self, state_id: uuid.UUID, role_id: uuid.UUID | None = None
@@ -103,7 +112,11 @@ class PathPlanner:
         # A page with a plain address is opened by that address when the clicks to it are long: shorter,
         # and it does not depend on menus or on data rows (a user's profile link) that exist for one role.
         direct = self.direct.get(state_id)
-        if direct and (result is None or len(result[0]) > 1):
+        if (
+            direct
+            and (result is None or len(result[0]) > 1)
+            and not self._stepped(state_id)
+        ):
             result = ([(direct, "url")], False)
         self._cache[key] = result
         return result
@@ -120,7 +133,7 @@ def build_planner(session: Session, snapshot_id: uuid.UUID) -> PathPlanner:
     planner = PathPlanner(start)
     planner.direct = {
         s.id: r for s in pages if s is not start and (r := direct_route(s))
-    }
+    }  # (steps of a wizard are dropped below, once its transitions are known)
     if not states:
         return planner
     elements = {
@@ -145,6 +158,14 @@ def build_planner(session: Session, snapshot_id: uuid.UUID) -> PathPlanner:
         planner.adj.setdefault(t.from_state_id, []).append(
             (t.to_state_id, label, kind, in_row)
         )
+        if t.fills or NEXT_LABEL.match(label.strip()):
+            planner.stepped.add(t.to_state_id)
+            planner.direct.pop(t.to_state_id, None)
+        if t.fills:
+            planner.pre[(t.from_state_id, t.to_state_id, label)] = [
+                (f"{f['kind']}\x1f{f['label']}\x1f{f['value']}", f["kind"])
+                for f in t.fills
+            ]
         if t.observed_by_role_id:
             planner.edge_roles.setdefault(
                 (t.from_state_id, t.to_state_id, label), set()

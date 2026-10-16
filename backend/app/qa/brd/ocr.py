@@ -5,6 +5,7 @@ Runs on CPU with RapidOCR (ONNX); nothing leaves the machine. Recognition is imp
 carries a warning and every low-confidence line is counted."""
 
 import logging
+from io import BytesIO
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -72,3 +73,38 @@ def ocr_into_page(page: Any) -> tuple[int, int]:
         )
         kept += 1
     return kept, dropped
+
+
+def image_lines(data: bytes) -> list[str]:
+    """The text of an image (a diagram, a screenshot) in reading order, confident lines only."""
+    import numpy as np
+    from PIL import Image
+
+    img = np.array(Image.open(BytesIO(data)).convert("RGB"))
+    result = _get_engine()(img)
+    boxes, texts, scores = (
+        getattr(result, "boxes", None),
+        getattr(result, "txts", None),
+        getattr(result, "scores", None),
+    )
+    if boxes is None or texts is None or scores is None:
+        return []
+    items = []
+    for box, text, score in zip(boxes, texts, scores, strict=False):
+        text = str(text).strip()
+        if len(text) < 2 or float(score) < MIN_CONFIDENCE:
+            continue
+        ys = [float(p[1]) for p in box]
+        xs = [float(p[0]) for p in box]
+        items.append((sum(ys) / 4, min(xs), text, max(ys) - min(ys)))
+    # rows: boxes whose vertical centres are within half a line height belong together
+    items.sort()
+    rows: list[list[tuple[float, float, str, float]]] = []
+    for it in items:
+        if rows and abs(it[0] - rows[-1][-1][0]) < max(8.0, it[3] * 0.6):
+            rows[-1].append(it)
+        else:
+            rows.append([it])
+    return [
+        " ".join(t for _y, _x, t, _h in sorted(r, key=lambda i: i[1])) for r in rows
+    ]

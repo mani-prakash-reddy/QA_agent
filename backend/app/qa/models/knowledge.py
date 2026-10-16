@@ -162,6 +162,11 @@ class Transition(SQLModel, table=True):
     # navigation | overlay | tab
     kind: str = Field(default="navigation", max_length=20)
     observed_by_role_id: uuid.UUID | None = None
+    # Values typed before this click (a wizard step): [{"kind": "fill|select", "label": ..., "value": ...}]
+    fills: list[Any] = Field(
+        default_factory=list,
+        sa_column=Column(JSONB, nullable=False, server_default="[]"),
+    )
 
 
 class RoleStateAccess(SQLModel, table=True):

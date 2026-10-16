@@ -345,7 +345,7 @@ def inventory_text(inventories: dict[str, Inventory]) -> str:
                 f"[shared: {', '.join(who)}]" if len(who) > 1 else f"[only: {who[0]}]"
             )
             out.append(
-                f"  {p.route} — {pretty_label(p.label, p.route)} {mark} "
+                f"  {p.route} - {pretty_label(p.label, p.route)} {mark} "
                 f"controls={p.elements} forms={p.forms} tabs={p.tabs} rows={p.rows}"
             )
     return "\n".join(out)
@@ -630,7 +630,7 @@ class Supervisor:
             title = f"{task.name}{f' ({task.part})' if task.part else ''}"
             child = self._child_ctx(
                 "explorer",
-                f"{title}: {task.goal} — as '{task.role}' ({task.complexity} complexity, {len(task.routes)} page(s))",
+                f"{title}: {task.goal} - as '{task.role}' ({task.complexity} complexity, {len(task.routes)} page(s))",
                 task.role,
                 task.steps,
                 session,
