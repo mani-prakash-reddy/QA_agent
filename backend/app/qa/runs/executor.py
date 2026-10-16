@@ -19,7 +19,9 @@ from app.qa.runs.context import RunContext
 from app.qa.runs.control import RunControl, StopRequested
 from app.qa.runs.kinds.crawl import run_crawl
 from app.qa.runs.kinds.echo import run_echo
+from app.qa.runs.kinds.generate import run_generate
 from app.qa.runs.kinds.ingest import run_ingest
+from app.qa.runs.kinds.map import run_map
 from app.qa.runs.persist import persist_events
 from app.qa.runs.status import status_from_agents
 from app.qa.security.scanner import SecretScanner
@@ -31,6 +33,9 @@ RUN_KINDS: dict[str, RunHandler] = {
     "echo": run_echo,
     "crawl": run_crawl,
     "ingest": run_ingest,
+    "map": run_map,
+    "generate": run_generate,
+    "regenerate": run_generate,
 }
 
 
@@ -41,6 +46,7 @@ def app_secret_values() -> set[str]:
         for s in (
             settings.LLM_API_KEY,
             settings.EMBEDDING_API_KEY,
+            settings.AZURE_OPENAI_API_KEY,
             settings.CREDENTIAL_ENCRYPTION_KEY,
         )
         if s is not None

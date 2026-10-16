@@ -43,6 +43,59 @@ export function describe(e: RunEvent): Row | null {
           p.warnings?.length ? ` · ⚠ ${p.warnings.join("; ")}` : ""
         }`,
       }
+    case "mapping_started":
+      return {
+        icon: "▤",
+        tone: "text-emerald-600 dark:text-emerald-400",
+        text: `Mapping ${p.requirements} requirements to ${p.screens} screens`,
+        sub: `match threshold ${Math.round(Number(p.threshold) * 100)}%`,
+      }
+    case "requirement_mapped": {
+      const sub =
+        p.outcome === "matched" || p.outcome === "weak"
+          ? `${p.outcome === "weak" ? "weak match" : "matched"}: ${p.screen} (${Math.round(Number(p.confidence) * 100)}%)`
+          : p.outcome === "not_ui"
+            ? "not visible in the UI"
+            : p.outcome === "failed"
+              ? "could not be assessed"
+              : "no screen shows it"
+      return {
+        icon: p.outcome === "matched" ? "✓" : "○",
+        tone:
+          p.outcome === "matched"
+            ? "text-emerald-600 dark:text-emerald-400"
+            : p.outcome === "failed"
+              ? "text-red-600 dark:text-red-400"
+              : "text-amber-600 dark:text-amber-400",
+        text: `${p.req_key}: ${p.title}`,
+        sub,
+      }
+    }
+    case "gaps_computed": {
+      const s = p.stats as Record<string, number>
+      return {
+        icon: "▤",
+        tone: "text-emerald-600 dark:text-emerald-400",
+        text: "Gap report updated",
+        sub: `${s.requirement_gaps} requirement gaps · ${s.feature_gaps} undocumented screens`,
+      }
+    }
+    case "generation_started":
+      return {
+        icon: "▤",
+        tone: "text-emerald-600 dark:text-emerald-400",
+        text: `Writing test cases for ${p.requirements} requirements`,
+        sub: p.skipped
+          ? `${p.skipped} requirements cannot be generated yet`
+          : "",
+      }
+    case "cases_generated":
+      return {
+        icon: "+",
+        tone: "text-emerald-600 dark:text-emerald-400",
+        text: `${p.req_key}: ${p.title}`,
+        sub: `${p.rule} rule-based · ${p.llm} scenario${Number(p.llm) === 1 ? "" : "s"}`,
+      }
     case "requirement_extracted":
       return {
         icon: "+",
@@ -112,6 +165,50 @@ export function describe(e: RunEvent): Row | null {
         sub: p.spec?.goal,
       }
     case "agent_status":
+      if (p.status === "structure_understood") {
+        const per = Object.entries(p.pages ?? {})
+          .map(([role, n]) => `${role}: ${n}`)
+          .join(", ")
+        return {
+          icon: "◉",
+          tone: "text-violet-600 dark:text-violet-400",
+          text: "Structure understood",
+          sub: `pages per role — ${per}; ${p.shared} shared by every role`,
+        }
+      }
+      if (p.status === "plan_ready") {
+        const pk = (p.packages ?? []) as {
+          name: string
+          role: string
+          complexity: string
+          part: string
+          pages: number
+        }[]
+        return {
+          icon: "▦",
+          tone: "text-violet-600 dark:text-violet-400",
+          text: `Plan: ${p.agents} explorer agent${Number(p.agents) === 1 ? "" : "s"}`,
+          sub: pk
+            .slice(0, 6)
+            .map(
+              (x) =>
+                `${x.name}${x.part ? ` ${x.part}` : ""} → ${x.role} (${x.complexity})`,
+            )
+            .join(" · "),
+        }
+      }
+      if (p.status === "coverage_report") {
+        const missed = Object.entries(p.missed ?? {})
+          .map(([role, n]) => `${role}: ${n}`)
+          .join(", ")
+        return {
+          icon: "◎",
+          tone: "text-violet-600 dark:text-violet-400",
+          text: missed
+            ? `Coverage report: pages still missing — ${missed}`
+            : "Coverage report: every scouted page was explored",
+        }
+      }
       return p.status && !String(p.status).endsWith("_requested")
         ? {
             icon: "◇",

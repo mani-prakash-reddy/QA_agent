@@ -250,6 +250,20 @@ export type ChunkPublic = {
 };
 
 /**
+ * ConfluenceImport
+ */
+export type ConfluenceImport = {
+    /**
+     * Page Url
+     */
+    page_url: string;
+    /**
+     * Email
+     */
+    email?: string | null;
+};
+
+/**
  * ControlRequest
  */
 export type ControlRequest = {
@@ -261,6 +275,60 @@ export type ControlRequest = {
      * Agent Id
      */
     agent_id?: string | null;
+};
+
+/**
+ * CoverageSummary
+ */
+export type CoverageSummary = {
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: string | null;
+    /**
+     * Threshold
+     */
+    threshold: number;
+    /**
+     * Requirements Total
+     */
+    requirements_total: number;
+    /**
+     * Requirements Matched
+     */
+    requirements_matched: number;
+    /**
+     * Requirement Gaps
+     */
+    requirement_gaps: number;
+    /**
+     * Screens Total
+     */
+    screens_total: number;
+    /**
+     * Feature Gaps
+     */
+    feature_gaps: number;
+    /**
+     * Mappings
+     */
+    mappings: number;
+    /**
+     * Confirmed
+     */
+    confirmed: number;
+    /**
+     * Rejected
+     */
+    rejected: number;
+    /**
+     * Last Run Id
+     */
+    last_run_id: string | null;
+    /**
+     * Crawl Partial
+     */
+    crawl_partial?: boolean;
 };
 
 /**
@@ -323,6 +391,46 @@ export type CrawlConfig = {
      * Max Concurrent Agents
      */
     max_concurrent_agents?: number;
+    /**
+     * Probe Forbidden Routes
+     */
+    probe_forbidden_routes?: boolean;
+    /**
+     * Max Modules
+     */
+    max_modules?: number;
+    /**
+     * Scout Max Pages
+     */
+    scout_max_pages?: number;
+    /**
+     * Max Agents Per Package
+     */
+    max_agents_per_package?: number;
+    /**
+     * Max Sessions Per Role
+     */
+    max_sessions_per_role?: number;
+    /**
+     * Agent Steps Per Module
+     */
+    agent_steps_per_module?: number;
+    /**
+     * Agentic Replans
+     */
+    agentic_replans?: number;
+    /**
+     * Explorer Model
+     */
+    explorer_model?: 'fast' | 'strong';
+    /**
+     * Capture Static Text
+     */
+    capture_static_text?: boolean;
+    /**
+     * Max Access Probes
+     */
+    max_access_probes?: number;
     /**
      * Screenshots
      */
@@ -407,6 +515,34 @@ export type Credentials = {
      * Totp Seed
      */
     totp_seed?: null;
+    /**
+     * Storage State
+     */
+    storage_state?: null;
+};
+
+/**
+ * DashboardPublic
+ */
+export type DashboardPublic = {
+    /**
+     * Projects
+     */
+    projects: Array<ProjectProgress>;
+    /**
+     * Recent Runs
+     */
+    recent_runs: Array<RecentRun>;
+    /**
+     * Running
+     */
+    running: number;
+    /**
+     * Totals
+     */
+    totals: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -483,6 +619,32 @@ export type EventPublic = {
     payload: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * ExternalRef
+ */
+export type ExternalRef = {
+    /**
+     * Tc Key
+     */
+    tc_key: string;
+    /**
+     * Platform
+     */
+    platform: string;
+    /**
+     * External Id
+     */
+    external_id: string;
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Pushed At
+     */
+    pushed_at: string;
 };
 
 /**
@@ -568,6 +730,98 @@ export type FormPublic = {
 };
 
 /**
+ * GapPublic
+ */
+export type GapPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: string;
+    /**
+     * Direction
+     */
+    direction: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Evidence
+     */
+    evidence: {
+        [key: string]: unknown;
+    };
+    /**
+     * Severity
+     */
+    severity: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Requirement Id
+     */
+    requirement_id: string | null;
+    /**
+     * Req Key
+     */
+    req_key: string | null;
+    /**
+     * Requirement Title
+     */
+    requirement_title: string | null;
+    /**
+     * Requirement Type
+     */
+    requirement_type: string | null;
+    /**
+     * Requirement Status
+     */
+    requirement_status: string | null;
+    /**
+     * State Id
+     */
+    state_id: string | null;
+    /**
+     * Screen Title
+     */
+    screen_title: string | null;
+    /**
+     * Screen Route
+     */
+    screen_route: string | null;
+};
+
+/**
+ * GapUpdate
+ */
+export type GapUpdate = {
+    /**
+     * Status
+     */
+    status: 'open' | 'accepted' | 'resolved';
+};
+
+/**
+ * GenerateRequest
+ */
+export type GenerateRequest = {
+    /**
+     * Requirement Ids
+     */
+    requirement_ids?: Array<string> | null;
+};
+
+/**
  * GenerationConfig
  */
 export type GenerationConfig = {
@@ -580,9 +834,18 @@ export type GenerationConfig = {
      */
     max_cases_per_requirement?: number;
     /**
+     * Llm Cases Per Requirement
+     */
+    llm_cases_per_requirement?: number;
+    /**
+     * Max Rule Cases Per Form
+     */
+    max_rule_cases_per_form?: number;
+    /**
      * Map Confidence Threshold
      */
     map_confidence_threshold?: number;
+    template?: TestCaseTemplate;
     /**
      * Dedup Cosine
      */
@@ -607,6 +870,80 @@ export type HTTPValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * HumanInput
+ */
+export type HumanInput = {
+    /**
+     * Role
+     */
+    role: string;
+};
+
+/**
+ * IntegrationPublic
+ */
+export type IntegrationPublic = {
+    /**
+     * Platform
+     */
+    platform: 'jira' | 'testrail' | 'zephyr';
+    /**
+     * Connected
+     */
+    connected: boolean;
+    /**
+     * Base Url
+     */
+    base_url: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Settings
+     */
+    settings: {
+        [key: string]: unknown;
+    };
+    /**
+     * Last Ok At
+     */
+    last_ok_at: string | null;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Help
+     */
+    help: string;
+};
+
+/**
+ * IntegrationSet
+ */
+export type IntegrationSet = {
+    /**
+     * Base Url
+     */
+    base_url?: string;
+    /**
+     * Username
+     */
+    username?: string;
+    /**
+     * Secret
+     */
+    secret?: null;
+    /**
+     * Settings
+     */
+    settings?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -678,6 +1015,152 @@ export type ItemsPublic = {
 };
 
 /**
+ * KindMetric
+ */
+export type KindMetric = {
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Seconds
+     */
+    seconds: number;
+    /**
+     * Input Tokens
+     */
+    input_tokens: number;
+    /**
+     * Output Tokens
+     */
+    output_tokens: number;
+};
+
+/**
+ * MappingCreate
+ */
+export type MappingCreate = {
+    /**
+     * Requirement Id
+     */
+    requirement_id: string;
+    /**
+     * State Id
+     */
+    state_id: string;
+    /**
+     * Note
+     */
+    note?: string;
+};
+
+/**
+ * MappingPublic
+ */
+export type MappingPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Requirement Id
+     */
+    requirement_id: string;
+    /**
+     * Req Key
+     */
+    req_key: string;
+    /**
+     * Requirement Title
+     */
+    requirement_title: string;
+    /**
+     * Requirement Type
+     */
+    requirement_type: string;
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: string;
+    /**
+     * State Id
+     */
+    state_id: string;
+    /**
+     * Screen Title
+     */
+    screen_title: string;
+    /**
+     * Screen Route
+     */
+    screen_route: string | null;
+    /**
+     * Screen Kind
+     */
+    screen_kind: string;
+    /**
+     * Confidence
+     */
+    confidence: number;
+    /**
+     * Rationale
+     */
+    rationale: string;
+    /**
+     * Citations
+     */
+    citations: Array<unknown>;
+    /**
+     * Retrieval Score
+     */
+    retrieval_score: number;
+    /**
+     * Method
+     */
+    method: string;
+    /**
+     * Review Status
+     */
+    review_status: string;
+    /**
+     * Effective
+     */
+    effective: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * MappingRunRequest
+ */
+export type MappingRunRequest = {
+    /**
+     * Snapshot Id
+     */
+    snapshot_id?: string | null;
+    /**
+     * Threshold
+     */
+    threshold?: number | null;
+};
+
+/**
+ * MappingUpdate
+ */
+export type MappingUpdate = {
+    /**
+     * Review Status
+     */
+    review_status: 'proposed' | 'confirmed' | 'rejected';
+};
+
+/**
  * MatrixPublic
  */
 export type MatrixPublic = {
@@ -721,6 +1204,12 @@ export type MatrixRow = {
     access: {
         [key: string]: boolean;
     };
+    /**
+     * Denied
+     */
+    denied?: {
+        [key: string]: string;
+    };
 };
 
 /**
@@ -731,6 +1220,28 @@ export type Message = {
      * Message
      */
     message: string;
+};
+
+/**
+ * MetricsPublic
+ */
+export type MetricsPublic = {
+    /**
+     * By Kind
+     */
+    by_kind: Array<KindMetric>;
+    /**
+     * Runs
+     */
+    runs: Array<RunMetric>;
+    /**
+     * Input Tokens
+     */
+    input_tokens: number;
+    /**
+     * Output Tokens
+     */
+    output_tokens: number;
 };
 
 /**
@@ -745,6 +1256,34 @@ export type NewPassword = {
      * New Password
      */
     new_password: string;
+};
+
+/**
+ * Option
+ */
+export type Option = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * PathStep
+ */
+export type PathStep = {
+    /**
+     * Screen
+     */
+    screen: string;
+    /**
+     * Via
+     */
+    via: string;
 };
 
 /**
@@ -796,6 +1335,68 @@ export type ProjectCreate = {
     crawl_config?: CrawlConfig;
     generation_config?: GenerationConfig;
     budget_caps?: BudgetCaps;
+};
+
+/**
+ * ProjectProgress
+ */
+export type ProjectProgress = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Target Base Url
+     */
+    target_base_url: string;
+    /**
+     * Roles
+     */
+    roles: number;
+    /**
+     * Requirements
+     */
+    requirements: number;
+    /**
+     * Screens
+     */
+    screens: number;
+    /**
+     * Mapped Requirements
+     */
+    mapped_requirements: number;
+    /**
+     * Test Cases
+     */
+    test_cases: number;
+    /**
+     * Approved Cases
+     */
+    approved_cases: number;
+    /**
+     * Covered Requirements
+     */
+    covered_requirements: number;
+    /**
+     * Next Step
+     */
+    next_step: string;
+    /**
+     * Last Run Kind
+     */
+    last_run_kind: string | null;
+    /**
+     * Last Run Status
+     */
+    last_run_status: string | null;
+    /**
+     * Last Run At
+     */
+    last_run_at: string | null;
 };
 
 /**
@@ -877,6 +1478,136 @@ export type ProjectUpdate = {
     crawl_config?: CrawlConfig | null;
     generation_config?: GenerationConfig | null;
     budget_caps?: BudgetCaps | null;
+};
+
+/**
+ * PushRequest
+ */
+export type PushRequest = {
+    /**
+     * Destination
+     */
+    destination: {
+        [key: string]: unknown;
+    };
+    /**
+     * Dry Run
+     */
+    dry_run?: boolean;
+    /**
+     * Include Drafts
+     */
+    include_drafts?: boolean;
+    /**
+     * Case Ids
+     */
+    case_ids?: Array<string> | null;
+};
+
+/**
+ * PushResult
+ */
+export type PushResult = {
+    /**
+     * Platform
+     */
+    platform: string;
+    /**
+     * Destination
+     */
+    destination: string;
+    /**
+     * Dry Run
+     */
+    dry_run: boolean;
+    /**
+     * Counts
+     */
+    counts: {
+        [key: string]: number;
+    };
+    /**
+     * Cases
+     */
+    cases: Array<PushedCase>;
+};
+
+/**
+ * PushedCase
+ */
+export type PushedCase = {
+    /**
+     * Tc Key
+     */
+    tc_key: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * External Id
+     */
+    external_id: string | null;
+    /**
+     * Url
+     */
+    url: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+};
+
+/**
+ * RecentRun
+ */
+export type RecentRun = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Project Name
+     */
+    project_name: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Seconds
+     */
+    seconds: number | null;
+    /**
+     * Partial
+     */
+    partial: boolean;
+};
+
+/**
+ * RegenerateRequest
+ */
+export type RegenerateRequest = {
+    /**
+     * Feedback
+     */
+    feedback?: string;
 };
 
 /**
@@ -1180,6 +1911,16 @@ export type RequirementsSummary = {
 };
 
 /**
+ * RestoreRequest
+ */
+export type RestoreRequest = {
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
  * RoleCreate
  */
 export type RoleCreate = {
@@ -1235,6 +1976,112 @@ export type RolePublic = {
 };
 
 /**
+ * RtmPublic
+ */
+export type RtmPublic = {
+    /**
+     * Rows
+     */
+    rows: Array<RtmRow>;
+    /**
+     * Requirements
+     */
+    requirements: number;
+    /**
+     * Covered
+     */
+    covered: number;
+    /**
+     * Uncovered
+     */
+    uncovered: number;
+    /**
+     * Needs Decision
+     */
+    needs_decision: number;
+    /**
+     * Test Cases
+     */
+    test_cases: number;
+};
+
+/**
+ * RtmRow
+ */
+export type RtmRow = {
+    /**
+     * Requirement Id
+     */
+    requirement_id: string;
+    /**
+     * Req Key
+     */
+    req_key: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Review Status
+     */
+    review_status: string;
+    /**
+     * Needs Decision
+     */
+    needs_decision: boolean;
+    /**
+     * Mapped Screens
+     */
+    mapped_screens: number;
+    /**
+     * Tests Own
+     */
+    tests_own: number;
+    /**
+     * Tests Linked
+     */
+    tests_linked: number;
+    /**
+     * Tests Total
+     */
+    tests_total: number;
+    /**
+     * By Type
+     */
+    by_type: {
+        [key: string]: number;
+    };
+    /**
+     * Approved
+     */
+    approved: number;
+    /**
+     * Draft
+     */
+    draft: number;
+    /**
+     * Needs Regen
+     */
+    needs_regen: number;
+    /**
+     * Rejected Tests
+     */
+    rejected_tests: number;
+    /**
+     * Coverage
+     */
+    coverage: string;
+    /**
+     * Reason
+     */
+    reason: string;
+};
+
+/**
  * RunCreate
  */
 export type RunCreate = {
@@ -1248,6 +2095,40 @@ export type RunCreate = {
     params?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * RunMetric
+ */
+export type RunMetric = {
+    /**
+     * Run Id
+     */
+    run_id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Seconds
+     */
+    seconds: number | null;
+    /**
+     * Input Tokens
+     */
+    input_tokens: number;
+    /**
+     * Output Tokens
+     */
+    output_tokens: number;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -1477,6 +2358,336 @@ export type StatePublic = {
 };
 
 /**
+ * TemplateColumn
+ */
+export type TemplateColumn = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Header
+     */
+    header?: string;
+};
+
+/**
+ * TemplateColumnPublic
+ */
+export type TemplateColumnPublic = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Header
+     */
+    header: string;
+};
+
+/**
+ * TemplatePublic
+ */
+export type TemplatePublic = {
+    /**
+     * Columns
+     */
+    columns: Array<TemplateColumnPublic>;
+    /**
+     * Id Prefix
+     */
+    id_prefix: string;
+    /**
+     * Available
+     */
+    available: Array<TemplateColumnPublic>;
+};
+
+/**
+ * TemplateUpdate
+ */
+export type TemplateUpdate = {
+    /**
+     * Columns
+     */
+    columns: Array<TemplateColumnPublic>;
+    /**
+     * Id Prefix
+     */
+    id_prefix?: string;
+};
+
+/**
+ * TestBulk
+ */
+export type TestBulk = {
+    /**
+     * Ids
+     */
+    ids: Array<string>;
+    /**
+     * Action
+     */
+    action: 'approve' | 'reject' | 'draft';
+};
+
+/**
+ * TestCaseEdit
+ */
+export type TestCaseEdit = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Preconditions
+     */
+    preconditions?: Array<string> | null;
+    /**
+     * Rendered Steps
+     */
+    rendered_steps?: Array<string> | null;
+    /**
+     * Test Data
+     */
+    test_data?: Array<{
+        [key: string]: string;
+    }> | null;
+    /**
+     * Expected Result
+     */
+    expected_result?: string | null;
+    /**
+     * Priority
+     */
+    priority?: 'P1' | 'P2' | 'P3' | 'P4' | null;
+    /**
+     * Test Type
+     */
+    test_type?: 'positive' | 'negative' | 'boundary' | 'field_validation' | 'role_access' | 'e2e' | 'business_rule' | null;
+    /**
+     * Role Name
+     */
+    role_name?: string | null;
+    /**
+     * Note
+     */
+    note?: string;
+};
+
+/**
+ * TestCasePublic
+ */
+export type TestCasePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Tc Key
+     */
+    tc_key: string;
+    /**
+     * Requirement Id
+     */
+    requirement_id: string;
+    /**
+     * Req Key
+     */
+    req_key: string;
+    /**
+     * Requirement Title
+     */
+    requirement_title: string;
+    /**
+     * Also Covers
+     */
+    also_covers: Array<string>;
+    /**
+     * State Id
+     */
+    state_id: string | null;
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: string;
+    /**
+     * Module
+     */
+    module: string | null;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Preconditions
+     */
+    preconditions: Array<unknown>;
+    /**
+     * Steps
+     */
+    steps: Array<unknown>;
+    /**
+     * Rendered Steps
+     */
+    rendered_steps: Array<unknown>;
+    /**
+     * Test Data
+     */
+    test_data: Array<unknown>;
+    /**
+     * Expected Result
+     */
+    expected_result: string;
+    /**
+     * Priority
+     */
+    priority: string;
+    /**
+     * Test Type
+     */
+    test_type: string;
+    /**
+     * Role Name
+     */
+    role_name: string | null;
+    /**
+     * Origin
+     */
+    origin: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Evidence
+     */
+    evidence: {
+        [key: string]: unknown;
+    };
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * TestCaseStatus
+ */
+export type TestCaseStatus = {
+    /**
+     * Status
+     */
+    status: 'draft' | 'approved' | 'rejected';
+};
+
+/**
+ * TestCaseTemplate
+ *
+ * Which columns the exports have, in what order, under what names (FR-E5).
+ */
+export type TestCaseTemplate = {
+    /**
+     * Columns
+     */
+    columns?: Array<TemplateColumn>;
+    /**
+     * Id Prefix
+     */
+    id_prefix?: string;
+};
+
+/**
+ * TestCasesPage
+ */
+export type TestCasesPage = {
+    /**
+     * Data
+     */
+    data: Array<TestCasePublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * TestVersionPublic
+ */
+export type TestVersionPublic = {
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Change Type
+     */
+    change_type: string;
+    /**
+     * Change Note
+     */
+    change_note: string;
+    /**
+     * Content
+     */
+    content: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * TestsSummary
+ */
+export type TestsSummary = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * By Status
+     */
+    by_status: {
+        [key: string]: number;
+    };
+    /**
+     * By Type
+     */
+    by_type: {
+        [key: string]: number;
+    };
+    /**
+     * By Origin
+     */
+    by_origin: {
+        [key: string]: number;
+    };
+    /**
+     * Requirements Total
+     */
+    requirements_total: number;
+    /**
+     * Requirements Covered
+     */
+    requirements_covered: number;
+    /**
+     * Last Run Id
+     */
+    last_run_id: string | null;
+};
+
+/**
  * Token
  */
 export type Token = {
@@ -1695,6 +2906,24 @@ export type ValidationError = {
 };
 
 /**
+ * ConfluenceImport
+ */
+export type ConfluenceImportWritable = {
+    /**
+     * Page Url
+     */
+    page_url: string;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Api Token
+     */
+    api_token: string;
+};
+
+/**
  * Credentials
  */
 export type CredentialsWritable = {
@@ -1705,11 +2934,53 @@ export type CredentialsWritable = {
     /**
      * Password
      */
-    password: string;
+    password?: string;
     /**
      * Totp Seed
      */
     totp_seed?: string | null;
+    /**
+     * Storage State
+     */
+    storage_state?: string | null;
+};
+
+/**
+ * HumanInput
+ */
+export type HumanInputWritable = {
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Value
+     */
+    value: string;
+};
+
+/**
+ * IntegrationSet
+ */
+export type IntegrationSetWritable = {
+    /**
+     * Base Url
+     */
+    base_url?: string;
+    /**
+     * Username
+     */
+    username?: string;
+    /**
+     * Secret
+     */
+    secret?: string | null;
+    /**
+     * Settings
+     */
+    settings?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -2593,6 +3864,241 @@ export type projectsDeleteRoleResponses = {
 
 export type projectsDeleteRoleResponse = projectsDeleteRoleResponses[keyof projectsDeleteRoleResponses];
 
+export type dashboardDashboardData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/dashboard/';
+};
+
+export type dashboardDashboardResponses = {
+    /**
+     * Successful Response
+     */
+    200: DashboardPublic;
+};
+
+export type dashboardDashboardResponse = dashboardDashboardResponses[keyof dashboardDashboardResponses];
+
+export type integrationsListIntegrationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/integrations/';
+};
+
+export type integrationsListIntegrationsResponses = {
+    /**
+     * Response Integrations-List Integrations
+     *
+     * Successful Response
+     */
+    200: Array<IntegrationPublic>;
+};
+
+export type integrationsListIntegrationsResponse = integrationsListIntegrationsResponses[keyof integrationsListIntegrationsResponses];
+
+export type integrationsRemoveIntegrationData = {
+    body?: never;
+    path: {
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query?: never;
+    url: '/api/v1/integrations/{platform}';
+};
+
+export type integrationsRemoveIntegrationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsRemoveIntegrationError = integrationsRemoveIntegrationErrors[keyof integrationsRemoveIntegrationErrors];
+
+export type integrationsRemoveIntegrationResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type integrationsRemoveIntegrationResponse = integrationsRemoveIntegrationResponses[keyof integrationsRemoveIntegrationResponses];
+
+export type integrationsSaveIntegrationData = {
+    body: IntegrationSetWritable;
+    path: {
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query?: never;
+    url: '/api/v1/integrations/{platform}';
+};
+
+export type integrationsSaveIntegrationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsSaveIntegrationError = integrationsSaveIntegrationErrors[keyof integrationsSaveIntegrationErrors];
+
+export type integrationsSaveIntegrationResponses = {
+    /**
+     * Successful Response
+     */
+    200: IntegrationPublic;
+};
+
+export type integrationsSaveIntegrationResponse = integrationsSaveIntegrationResponses[keyof integrationsSaveIntegrationResponses];
+
+export type integrationsTestIntegrationData = {
+    body?: never;
+    path: {
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query?: never;
+    url: '/api/v1/integrations/{platform}/test';
+};
+
+export type integrationsTestIntegrationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsTestIntegrationError = integrationsTestIntegrationErrors[keyof integrationsTestIntegrationErrors];
+
+export type integrationsTestIntegrationResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type integrationsTestIntegrationResponse = integrationsTestIntegrationResponses[keyof integrationsTestIntegrationResponses];
+
+export type integrationsIntegrationOptionsData = {
+    body?: never;
+    path: {
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query: {
+        /**
+         * Kind
+         */
+        kind: string;
+        /**
+         * Parent
+         */
+        parent?: string;
+    };
+    url: '/api/v1/integrations/{platform}/options';
+};
+
+export type integrationsIntegrationOptionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsIntegrationOptionsError = integrationsIntegrationOptionsErrors[keyof integrationsIntegrationOptionsErrors];
+
+export type integrationsIntegrationOptionsResponses = {
+    /**
+     * Response Integrations-Integration Options
+     *
+     * Successful Response
+     */
+    200: Array<Option>;
+};
+
+export type integrationsIntegrationOptionsResponse = integrationsIntegrationOptionsResponses[keyof integrationsIntegrationOptionsResponses];
+
+export type integrationsPushData = {
+    body: PushRequest;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/integrations/{platform}/push';
+};
+
+export type integrationsPushErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsPushError = integrationsPushErrors[keyof integrationsPushErrors];
+
+export type integrationsPushResponses = {
+    /**
+     * Successful Response
+     */
+    200: PushResult;
+};
+
+export type integrationsPushResponse = integrationsPushResponses[keyof integrationsPushResponses];
+
+export type integrationsPushedData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+        /**
+         * Platform
+         */
+        platform: 'jira' | 'testrail' | 'zephyr';
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/integrations/{platform}/pushed';
+};
+
+export type integrationsPushedErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type integrationsPushedError = integrationsPushedErrors[keyof integrationsPushedErrors];
+
+export type integrationsPushedResponses = {
+    /**
+     * Response Integrations-Pushed
+     *
+     * Successful Response
+     */
+    200: Array<ExternalRef>;
+};
+
+export type integrationsPushedResponse = integrationsPushedResponses[keyof integrationsPushedResponses];
+
 export type runsListRunsData = {
     body?: never;
     path: {
@@ -2800,6 +4306,36 @@ export type runsControlRunResponses = {
 };
 
 export type runsControlRunResponse = runsControlRunResponses[keyof runsControlRunResponses];
+
+export type runsHumanInputData = {
+    body: HumanInputWritable;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/runs/{run_id}/human-input';
+};
+
+export type runsHumanInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type runsHumanInputError = runsHumanInputErrors[keyof runsHumanInputErrors];
+
+export type runsHumanInputResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type runsHumanInputResponse = runsHumanInputResponses[keyof runsHumanInputResponses];
 
 export type runsStreamRunData = {
     body?: never;
@@ -3090,6 +4626,81 @@ export type knowledgeCrawlLogResponses = {
 
 export type knowledgeCrawlLogResponse = knowledgeCrawlLogResponses[keyof knowledgeCrawlLogResponses];
 
+export type knowledgeRebuildGraphData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query?: never;
+    url: '/api/v1/snapshots/{snapshot_id}/graph';
+};
+
+export type knowledgeRebuildGraphErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeRebuildGraphError = knowledgeRebuildGraphErrors[keyof knowledgeRebuildGraphErrors];
+
+export type knowledgeRebuildGraphResponses = {
+    /**
+     * Response Knowledge-Rebuild Graph
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: number;
+    };
+};
+
+export type knowledgeRebuildGraphResponse = knowledgeRebuildGraphResponses[keyof knowledgeRebuildGraphResponses];
+
+export type knowledgeScreenPathData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query: {
+        /**
+         * From State
+         */
+        from_state: string;
+        /**
+         * To State
+         */
+        to_state: string;
+    };
+    url: '/api/v1/snapshots/{snapshot_id}/path';
+};
+
+export type knowledgeScreenPathErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type knowledgeScreenPathError = knowledgeScreenPathErrors[keyof knowledgeScreenPathErrors];
+
+export type knowledgeScreenPathResponses = {
+    /**
+     * Response Knowledge-Screen Path
+     *
+     * Successful Response
+     */
+    200: Array<PathStep>;
+};
+
+export type knowledgeScreenPathResponse = knowledgeScreenPathResponses[keyof knowledgeScreenPathResponses];
+
 export type brdListBrdData = {
     body?: never;
     path: {
@@ -3151,6 +4762,36 @@ export type brdUploadBrdResponses = {
 };
 
 export type brdUploadBrdResponse = brdUploadBrdResponses[keyof brdUploadBrdResponses];
+
+export type brdImportConfluenceData = {
+    body: ConfluenceImportWritable;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/brd/confluence';
+};
+
+export type brdImportConfluenceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type brdImportConfluenceError = brdImportConfluenceErrors[keyof brdImportConfluenceErrors];
+
+export type brdImportConfluenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: BrdUploadResult;
+};
+
+export type brdImportConfluenceResponse = brdImportConfluenceResponses[keyof brdImportConfluenceResponses];
 
 export type brdDeleteBrdData = {
     body?: never;
@@ -3611,6 +5252,805 @@ export type requirementsBulkReviewResponses = {
 };
 
 export type requirementsBulkReviewResponse = requirementsBulkReviewResponses[keyof requirementsBulkReviewResponses];
+
+export type mappingStartMappingData = {
+    /**
+     * Body
+     */
+    body?: MappingRunRequest | null;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/mapping/run';
+};
+
+export type mappingStartMappingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingStartMappingError = mappingStartMappingErrors[keyof mappingStartMappingErrors];
+
+export type mappingStartMappingResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunPublic;
+};
+
+export type mappingStartMappingResponse = mappingStartMappingResponses[keyof mappingStartMappingResponses];
+
+export type mappingListMappingsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id?: string | null;
+        /**
+         * Requirement Id
+         */
+        requirement_id?: string | null;
+        /**
+         * State Id
+         */
+        state_id?: string | null;
+        /**
+         * Review Status
+         */
+        review_status?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/projects/{project_id}/mappings';
+};
+
+export type mappingListMappingsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingListMappingsError = mappingListMappingsErrors[keyof mappingListMappingsErrors];
+
+export type mappingListMappingsResponses = {
+    /**
+     * Response Mapping-List Mappings
+     *
+     * Successful Response
+     */
+    200: Array<MappingPublic>;
+};
+
+export type mappingListMappingsResponse = mappingListMappingsResponses[keyof mappingListMappingsResponses];
+
+export type mappingAddMappingData = {
+    body: MappingCreate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/mappings';
+};
+
+export type mappingAddMappingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingAddMappingError = mappingAddMappingErrors[keyof mappingAddMappingErrors];
+
+export type mappingAddMappingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MappingPublic;
+};
+
+export type mappingAddMappingResponse = mappingAddMappingResponses[keyof mappingAddMappingResponses];
+
+export type mappingReviewMappingData = {
+    body: MappingUpdate;
+    path: {
+        /**
+         * Mapping Id
+         */
+        mapping_id: string;
+    };
+    query?: never;
+    url: '/api/v1/mappings/{mapping_id}';
+};
+
+export type mappingReviewMappingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingReviewMappingError = mappingReviewMappingErrors[keyof mappingReviewMappingErrors];
+
+export type mappingReviewMappingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MappingPublic;
+};
+
+export type mappingReviewMappingResponse = mappingReviewMappingResponses[keyof mappingReviewMappingResponses];
+
+export type mappingListGapsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id?: string | null;
+        /**
+         * Direction
+         */
+        direction?: string | null;
+        /**
+         * Status
+         */
+        status?: string | null;
+    };
+    url: '/api/v1/projects/{project_id}/gaps';
+};
+
+export type mappingListGapsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingListGapsError = mappingListGapsErrors[keyof mappingListGapsErrors];
+
+export type mappingListGapsResponses = {
+    /**
+     * Response Mapping-List Gaps
+     *
+     * Successful Response
+     */
+    200: Array<GapPublic>;
+};
+
+export type mappingListGapsResponse = mappingListGapsResponses[keyof mappingListGapsResponses];
+
+export type mappingUpdateGapData = {
+    body: GapUpdate;
+    path: {
+        /**
+         * Gap Id
+         */
+        gap_id: string;
+    };
+    query?: never;
+    url: '/api/v1/gaps/{gap_id}';
+};
+
+export type mappingUpdateGapErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingUpdateGapError = mappingUpdateGapErrors[keyof mappingUpdateGapErrors];
+
+export type mappingUpdateGapResponses = {
+    /**
+     * Successful Response
+     */
+    200: GapPublic;
+};
+
+export type mappingUpdateGapResponse = mappingUpdateGapResponses[keyof mappingUpdateGapResponses];
+
+export type mappingExportGapsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Format
+         */
+        format?: string;
+        /**
+         * Snapshot Id
+         */
+        snapshot_id?: string | null;
+    };
+    url: '/api/v1/projects/{project_id}/gaps/export';
+};
+
+export type mappingExportGapsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingExportGapsError = mappingExportGapsErrors[keyof mappingExportGapsErrors];
+
+export type mappingExportGapsResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type mappingMappingSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/mapping/summary';
+};
+
+export type mappingMappingSummaryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type mappingMappingSummaryError = mappingMappingSummaryErrors[keyof mappingMappingSummaryErrors];
+
+export type mappingMappingSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: CoverageSummary;
+};
+
+export type mappingMappingSummaryResponse = mappingMappingSummaryResponses[keyof mappingMappingSummaryResponses];
+
+export type testsStartGenerationData = {
+    /**
+     * Body
+     */
+    body?: GenerateRequest | null;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/tests/generate';
+};
+
+export type testsStartGenerationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsStartGenerationError = testsStartGenerationErrors[keyof testsStartGenerationErrors];
+
+export type testsStartGenerationResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunPublic;
+};
+
+export type testsStartGenerationResponse = testsStartGenerationResponses[keyof testsStartGenerationResponses];
+
+export type testsListTestsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Status
+         */
+        status?: string | null;
+        /**
+         * Test Type
+         */
+        test_type?: string | null;
+        /**
+         * Requirement Id
+         */
+        requirement_id?: string | null;
+        /**
+         * Role
+         */
+        role?: string | null;
+        /**
+         * Origin
+         */
+        origin?: string | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/projects/{project_id}/tests';
+};
+
+export type testsListTestsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsListTestsError = testsListTestsErrors[keyof testsListTestsErrors];
+
+export type testsListTestsResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestCasesPage;
+};
+
+export type testsListTestsResponse = testsListTestsResponses[keyof testsListTestsResponses];
+
+export type testsTestsSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/tests/summary';
+};
+
+export type testsTestsSummaryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsTestsSummaryError = testsTestsSummaryErrors[keyof testsTestsSummaryErrors];
+
+export type testsTestsSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestsSummary;
+};
+
+export type testsTestsSummaryResponse = testsTestsSummaryResponses[keyof testsTestsSummaryResponses];
+
+export type testsReadTestData = {
+    body?: never;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}';
+};
+
+export type testsReadTestErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsReadTestError = testsReadTestErrors[keyof testsReadTestErrors];
+
+export type testsReadTestResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestCasePublic;
+};
+
+export type testsReadTestResponse = testsReadTestResponses[keyof testsReadTestResponses];
+
+export type testsEditTestData = {
+    body: TestCaseEdit;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}';
+};
+
+export type testsEditTestErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsEditTestError = testsEditTestErrors[keyof testsEditTestErrors];
+
+export type testsEditTestResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestCasePublic;
+};
+
+export type testsEditTestResponse = testsEditTestResponses[keyof testsEditTestResponses];
+
+export type testsSetStatusData = {
+    body: TestCaseStatus;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}/status';
+};
+
+export type testsSetStatusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsSetStatusError = testsSetStatusErrors[keyof testsSetStatusErrors];
+
+export type testsSetStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestCasePublic;
+};
+
+export type testsSetStatusResponse = testsSetStatusResponses[keyof testsSetStatusResponses];
+
+export type testsTestVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}/versions';
+};
+
+export type testsTestVersionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsTestVersionsError = testsTestVersionsErrors[keyof testsTestVersionsErrors];
+
+export type testsTestVersionsResponses = {
+    /**
+     * Response Tests-Test Versions
+     *
+     * Successful Response
+     */
+    200: Array<TestVersionPublic>;
+};
+
+export type testsTestVersionsResponse = testsTestVersionsResponses[keyof testsTestVersionsResponses];
+
+export type testsRestoreTestData = {
+    body: RestoreRequest;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}/restore';
+};
+
+export type testsRestoreTestErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsRestoreTestError = testsRestoreTestErrors[keyof testsRestoreTestErrors];
+
+export type testsRestoreTestResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestCasePublic;
+};
+
+export type testsRestoreTestResponse = testsRestoreTestResponses[keyof testsRestoreTestResponses];
+
+export type testsBulkStatusData = {
+    body: TestBulk;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/tests/bulk';
+};
+
+export type testsBulkStatusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsBulkStatusError = testsBulkStatusErrors[keyof testsBulkStatusErrors];
+
+export type testsBulkStatusResponses = {
+    /**
+     * Response Tests-Bulk Status
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type testsRegenerateData = {
+    body: RegenerateRequest;
+    path: {
+        /**
+         * Test Id
+         */
+        test_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tests/{test_id}/regenerate';
+};
+
+export type testsRegenerateErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type testsRegenerateError = testsRegenerateErrors[keyof testsRegenerateErrors];
+
+export type testsRegenerateResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunPublic;
+};
+
+export type testsRegenerateResponse = testsRegenerateResponses[keyof testsRegenerateResponses];
+
+export type exportsReadRtmData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/rtm';
+};
+
+export type exportsReadRtmErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type exportsReadRtmError = exportsReadRtmErrors[keyof exportsReadRtmErrors];
+
+export type exportsReadRtmResponses = {
+    /**
+     * Successful Response
+     */
+    200: RtmPublic;
+};
+
+export type exportsReadRtmResponse = exportsReadRtmResponses[keyof exportsReadRtmResponses];
+
+export type exportsExportData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+        /**
+         * Kind
+         */
+        kind: string;
+    };
+    query?: {
+        /**
+         * Format
+         */
+        format?: string;
+        /**
+         * Status
+         */
+        status?: string | null;
+        /**
+         * Test Type
+         */
+        test_type?: string | null;
+        /**
+         * Include Rejected
+         */
+        include_rejected?: boolean;
+        /**
+         * Snapshot Id
+         */
+        snapshot_id?: string | null;
+    };
+    url: '/api/v1/projects/{project_id}/exports/{kind}';
+};
+
+export type exportsExportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type exportsExportError = exportsExportErrors[keyof exportsExportErrors];
+
+export type exportsExportResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type exportsReadTemplateData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/template';
+};
+
+export type exportsReadTemplateErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type exportsReadTemplateError = exportsReadTemplateErrors[keyof exportsReadTemplateErrors];
+
+export type exportsReadTemplateResponses = {
+    /**
+     * Successful Response
+     */
+    200: TemplatePublic;
+};
+
+export type exportsReadTemplateResponse = exportsReadTemplateResponses[keyof exportsReadTemplateResponses];
+
+export type exportsUpdateTemplateData = {
+    body: TemplateUpdate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/template';
+};
+
+export type exportsUpdateTemplateErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type exportsUpdateTemplateError = exportsUpdateTemplateErrors[keyof exportsUpdateTemplateErrors];
+
+export type exportsUpdateTemplateResponses = {
+    /**
+     * Successful Response
+     */
+    200: TemplatePublic;
+};
+
+export type exportsUpdateTemplateResponse = exportsUpdateTemplateResponses[keyof exportsUpdateTemplateResponses];
+
+export type exportsMetricsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/metrics';
+};
+
+export type exportsMetricsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type exportsMetricsError = exportsMetricsErrors[keyof exportsMetricsErrors];
+
+export type exportsMetricsResponses = {
+    /**
+     * Successful Response
+     */
+    200: MetricsPublic;
+};
+
+export type exportsMetricsResponse = exportsMetricsResponses[keyof exportsMetricsResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

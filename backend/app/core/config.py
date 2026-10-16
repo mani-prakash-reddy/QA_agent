@@ -60,7 +60,14 @@ class Settings(BaseSettings):
     EMBEDDING_BASE_URL: str | None = None
     EMBEDDING_API_KEY: SecretStr | None = None
     EMBEDDING_MODEL: str = "liquid/lfm-2.5-embedding-350m:free"
-    EMBEDDING_DIM: int = 1024
+    EMBEDDING_DIM: int = 1536
+
+    # Azure OpenAI embeddings. When these are set they are used instead of the OpenAI-compatible endpoint
+    # above (an enterprise deployment, so also allowed for confidential projects).
+    AZURE_OPENAI_ENDPOINT: str | None = None
+    AZURE_OPENAI_API_VERSION: str = "2024-12-01-preview"
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str | None = None
+    AZURE_OPENAI_API_KEY: SecretStr | None = None
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
@@ -80,8 +87,25 @@ class Settings(BaseSettings):
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
     @property
+    def azure_embeddings(self) -> bool:
+        return bool(
+            self.AZURE_OPENAI_ENDPOINT
+            and self.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
+            and self.AZURE_OPENAI_API_KEY
+        )
+
+    @property
+    def embedding_model_id(self) -> str:
+        """Which model produced a stored vector (vectors of different models are not comparable)."""
+        if self.azure_embeddings:
+            return f"azure:{self.AZURE_OPENAI_EMBEDDING_DEPLOYMENT}"
+        return self.EMBEDDING_MODEL
+
+    @property
     def allowed_target_hosts(self) -> set[str]:
-        return {h.strip().lower() for h in self.ALLOWED_TARGET_HOSTS.split(",") if h.strip()}
+        return {
+            h.strip().lower() for h in self.ALLOWED_TARGET_HOSTS.split(",") if h.strip()
+        }
 
     @computed_field  # type: ignore[prop-decorator]
     @property

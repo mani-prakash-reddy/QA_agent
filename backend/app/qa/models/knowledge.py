@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
 from app.qa.models.project import jsonb, ts_field
+from app.qa.models.requirements import vector_column
 
 
 class AppSnapshot(SQLModel, table=True):
@@ -56,10 +57,16 @@ class UiState(SQLModel, table=True):
         default_factory=list, sa_column=Column(JSONB, nullable=False)
     )
     summary: str | None = None  # LLM-written purpose (M4)
+    # Masked static content seen on the screen: {"headers": [[column, ...]], "text": [caption, ...]}.
+    # Never table data; e-mails/tokens masked, digits dropped (see browser.extract.mask_content).
+    content: dict[str, Any] = jsonb(dict)
     screenshot_path: str | None = None
     discovered_by_agent: str | None = Field(default=None, max_length=64)
     discovery_source: str = Field(default="click", max_length=20)
     depth: int = 0
+    # Mapping retrieval vector over the screen's text card (computed lazily by the map run).
+    embedding: Any = Field(default=None, sa_column=vector_column())
+    embedding_model: str | None = Field(default=None, max_length=200)
 
 
 class UiElement(SQLModel, table=True):

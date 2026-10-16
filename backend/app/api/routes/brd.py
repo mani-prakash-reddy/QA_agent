@@ -8,6 +8,7 @@ from typing import Annotated, Any
 
 from anyio import from_thread
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel, Field, SecretStr
 from sqlmodel import Session, col, delete, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -15,6 +16,12 @@ from app.api.routes.projects import get_owned_project
 from app.api.routes.runs import enqueue_run
 from app.core.config import settings
 from app.models import Message
+from app.qa.brd.confluence import (
+    ConfluenceError,
+    fetch_page,
+    html_to_markdown,
+    parse_page_ref,
+)
 from app.qa.brd.parse import MAX_UPLOAD_BYTES, BrdParseError, detect_format
 from app.qa.models import BrdChunk, BrdDocument, Requirement, Run
 from app.qa.schemas import BrdPublic, BrdUploadResult, ChunkPublic
@@ -107,6 +114,19 @@ def upload_brd(
             detail=f"This file was already uploaded as '{twin.filename}'",
         )
 
+    return _store_and_ingest(session, current_user, project, data, name, fmt, digest)
+
+
+def _store_and_ingest(
+    session: Session,
+    user: Any,
+    project: Any,
+    data: bytes,
+    name: str,
+    fmt: str,
+    digest: str,
+) -> BrdUploadResult:
+    project_id = project.id
     doc_id = uuid.uuid4()
     rel = f"{project_id}/brd/{doc_id}/original{EXT[fmt]}"
     path = Path(settings.ARTIFACT_DIR).resolve() / rel
@@ -123,10 +143,50 @@ def upload_brd(
     session.add(doc)
     session.commit()
     session.refresh(doc)
-    run = _start_ingest(session, doc, current_user.id, project.confidential)
+    run = _start_ingest(session, doc, user.id, project.confidential)
     return BrdUploadResult(
         document=BrdPublic.model_validate(doc, from_attributes=True), run_id=run.id
     )
+
+
+class ConfluenceImport(BaseModel):
+    page_url: str = Field(min_length=10, max_length=1000)
+    email: str | None = Field(
+        default=None, max_length=300
+    )  # Cloud: e-mail + API token; Data Center: token only
+    api_token: SecretStr
+
+
+@router.post("/projects/{project_id}/brd/confluence", response_model=BrdUploadResult)
+def import_confluence(
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    body: ConfluenceImport,
+) -> Any:
+    """Pull one Confluence page as the BRD. The token is used for this request only."""
+    project = get_owned_project(session, current_user, project_id)
+    try:
+        base, page_id = parse_page_ref(body.page_url)
+        title, html = fetch_page(
+            base, page_id, email=body.email, token=body.api_token.get_secret_value()
+        )
+    except ConfluenceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    data = html_to_markdown(title, html).encode()
+    digest = hashlib.sha256(data).hexdigest()
+    twin = session.exec(
+        select(BrdDocument).where(
+            BrdDocument.project_id == project_id, BrdDocument.sha256 == digest
+        )
+    ).first()
+    if twin:
+        raise HTTPException(
+            status_code=409,
+            detail=f"This page was already imported as '{twin.filename}'",
+        )
+    name = safe_filename(f"{title} (Confluence).md")
+    return _store_and_ingest(session, current_user, project, data, name, "text", digest)
 
 
 @router.get("/projects/{project_id}/brd", response_model=list[BrdPublic])

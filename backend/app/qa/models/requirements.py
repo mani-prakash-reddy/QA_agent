@@ -11,9 +11,7 @@ from sqlmodel import Field, SQLModel
 
 from app.qa.models.project import jsonb, ts_field
 
-EMBEDDING_DIM = (
-    1024  # fixed by the schema: pgvector HNSW cannot index more than 2000 dims
-)
+EMBEDDING_DIM = 1536  # fixed by the schema (Azure text-embedding-ada-002); pgvector HNSW cannot index more than 2000 dims
 
 
 def vector_column() -> Any:

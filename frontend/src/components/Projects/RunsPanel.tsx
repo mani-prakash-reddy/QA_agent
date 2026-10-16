@@ -28,6 +28,79 @@ const duration = (
   return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`
 }
 
+type CrawlSettings = {
+  explorer_mode?: "agentic" | "deterministic"
+  probe_forbidden_routes?: boolean
+  capture_static_text?: boolean
+}
+
+function CrawlSettingsBar({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient()
+  const { showErrorToast } = useCustomToast()
+  const { data: project } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: async () =>
+      (await ProjectsService.readProject({ path: { project_id: projectId } }))
+        .data,
+  })
+  const cfg = (project?.crawl_config ?? {}) as CrawlSettings
+  const save = useMutation({
+    mutationFn: (patch: CrawlSettings) =>
+      ProjectsService.updateProject({
+        path: { project_id: projectId },
+        body: { crawl_config: { ...project?.crawl_config, ...patch } },
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] }),
+    onError: handleError.bind(showErrorToast),
+  })
+  if (!project) return null
+  return (
+    <div className="flex flex-wrap items-center gap-4 rounded-md border p-3 text-sm">
+      <label className="flex items-center gap-2">
+        Explorer
+        <select
+          aria-label="Explorer"
+          className="h-8 rounded-md border bg-background px-2"
+          value={cfg.explorer_mode ?? "deterministic"}
+          onChange={(e) =>
+            save.mutate({
+              explorer_mode: e.target.value as "agentic" | "deterministic",
+            })
+          }
+        >
+          <option value="deterministic">
+            Deterministic (fast, no AI tokens)
+          </option>
+          <option value="agentic">
+            Supervised agents (scouts, a plan, explorers)
+          </option>
+        </select>
+      </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={cfg.probe_forbidden_routes ?? true}
+          onChange={(e) =>
+            save.mutate({ probe_forbidden_routes: e.target.checked })
+          }
+        />
+        Probe forbidden routes
+      </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={cfg.capture_static_text ?? true}
+          onChange={(e) =>
+            save.mutate({ capture_static_text: e.target.checked })
+          }
+        />
+        Capture table headers and captions (masked)
+      </label>
+    </div>
+  )
+}
+
 export function RunsPanel({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -78,6 +151,7 @@ export function RunsPanel({ projectId }: { projectId: string }) {
           Start crawl
         </Button>
       </div>
+      <CrawlSettingsBar projectId={projectId} />
       {!ready && (
         <p className="text-sm text-amber-600 dark:text-amber-400">
           Add a role with credentials first (Roles tab).

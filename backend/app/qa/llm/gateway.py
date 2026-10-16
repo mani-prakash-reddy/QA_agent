@@ -8,7 +8,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import LLMResult
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, ChatOpenAI, OpenAIEmbeddings
 
 from app.core.config import settings
 from app.qa.security.scanner import SecretScanner
@@ -125,7 +125,19 @@ def get_chat_model(
     )
 
 
-def get_embeddings(*, confidential: bool = False) -> OpenAIEmbeddings:
+def get_embeddings(
+    *, confidential: bool = False
+) -> OpenAIEmbeddings | AzureOpenAIEmbeddings:
+    if settings.azure_embeddings:
+        key = settings.AZURE_OPENAI_API_KEY
+        assert key is not None
+        return AzureOpenAIEmbeddings(
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            azure_deployment=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
+            api_version=settings.AZURE_OPENAI_API_VERSION,
+            api_key=key,
+            max_retries=3,
+        )
     if not settings.EMBEDDING_BASE_URL or settings.EMBEDDING_API_KEY is None:
         raise LLMConfigError(
             "EMBEDDING_BASE_URL / EMBEDDING_API_KEY are not configured"

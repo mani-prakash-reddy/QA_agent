@@ -3,6 +3,26 @@
 > Product document (deliverable 1 of the assignment). Describes components, data flow, technology choices with reasons, and the prompt strategy.
 > Implementation-level detail (APIs, schemas, tool specs) lives in `dev_docs/TRD.md` and `dev_docs/backend-schema.md`.
 
+## 0. What is built (read this first)
+
+This document describes the target design. The table says what the delivered system actually does today; measured behaviour is in [evaluation.md](evaluation.md).
+
+| Component | State | Notes |
+|---|---|---|
+| BRD ingest (PDF, scanned PDF, DOCX, Markdown, text, Confluence page) | **Built** | Quote-verified extraction, ambiguity flags, review UI. Scans are read with CPU OCR (RapidOCR) and flagged; Confluence import is tested against a mocked API only. |
+| Agent runtime (specs, budgets, tool gate, live events, pause/stop) | **Built** | Exercised by the ingest, crawl, mapping and generation runs. |
+| Supervisor that plans and spawns explorer sub-agents | **Built (optional mode)** | `explorer_mode: agentic`: scouts measure each role's pages, the supervisor splits the work (shared pages once, role-only pages by that role), the team is sized by measured complexity, explorers walk their pages, one coverage replan. Shown live as a tree of agent cards. |
+| Explorer | **Deterministic (default) and agentic** | Both go through the same tool gate. Measured on the template app: agentic found fewer screens (28 vs 37) at about 866k tokens, so deterministic is the default; see evaluation.md §5. |
+| Login handling | **Built** | Form login, TOTP from a seed, a one-time code typed by a person on the run page, stored browser session (the way past CAPTCHA/SSO), re-login when a session expires mid-crawl. A CAPTCHA fails the role with a clear message; it is never solved. |
+| Safe mode (network guard, destructive-control classifier, staging acknowledgement) | **Built** | Forms are never submitted; writes are blocked even if a click slips through. |
+| Knowledge model | **Built (relational + AGE graph)** | States, elements, forms/fields, transitions, role access (including observed denials from forbidden-route probing), masked table headers/captions, screenshots; JSON/Excel export; Apache AGE projection with a shortest-path API. Observed-API capture is not built. |
+| Mapping and two-way gap report | **Built** | Hybrid retrieval, evidence-verified judge, human review. |
+| Test generation | **Built** | Rules plus an author agent, grounded and de-duplicated. No separate critic agent; the validator is deterministic. |
+| Review, versions, RTM, exports, template, metrics | **Built** | Excel/CSV/JSON. |
+| Jira / TestRail / Zephyr | **Built, verified against mocked APIs only** | Bring-your-own-key per user (Integrations page): Jira Cloud (issues), TestRail (cases with steps), Zephyr Scale Cloud (cases with steps). Preview, push approved cases, update instead of duplicate. Not yet exercised against a real account. |
+
+Sections below that mention a critic agent or observed API endpoints describe the design, not the current behaviour.
+
 ## 1. Purpose
 
 QA Agent takes a Business Requirements Document (BRD) and access to a live web application, explores the application on its own for each user role, and generates **business-specific, traceable test cases** that use the application's real screen names, field labels and navigation paths.
@@ -135,8 +155,8 @@ A sitemap is optional and rarely useful for authenticated SPAs. Discovery merges
 | **Requirement extraction** | One structured-output call per section (prompt `extract-v2`, temperature 0). Each requirement must include a verbatim quote, which code **verifies against the section text**: a near-miss is replaced by the document's own sentence and anything else is discarded, so an invented requirement cannot be stored. Scope/background statements are excluded by instruction. Vague or incomplete wording is *flagged, not guessed*: deterministic wording checks (vague terms, TBD, unmeasurable targets) are merged with the model's own judgement, and a flagged requirement needs a human decision before it can be approved or used for test generation. |
 | **Supervisor** | Fixed base prompt (mission, safety, tool semantics) + project context summary. Reasons in plan → spawn → review loops with coverage stats as feedback. |
 | **Explorer** | Fixed base prompt + supervisor's goal text + scope. Observation = compact accessibility snapshot with opaque element handles, never raw HTML. Told to stop on no-new-state streaks. |
-| **Mapping judge** | Receives one requirement and *only* retrieved candidate states; must return state ids from that set with a confidence and a rationale citing element labels. |
-| **Test author** | Receives requirement, mapped states with their element catalog, navigation paths, roles, and a few format examples; outputs structured steps referencing handles. |
+| **Mapping judge** | Prompt `map-v3`. Candidates come from hybrid retrieval (keyword coverage + embedding cosine, rank-fused) over *screen cards* built only from what the crawler recorded; route variants of one page are a single candidate. The judge receives one requirement and those cards and may answer only with candidate aliases, each with a confidence, a one-sentence rationale and evidence labels. Code **verifies every cited label exists on the card**; a claim with no checkable evidence cannot exceed 40%. A requirement keeps at most four screens within 0.2 of its best, and an empty answer for a behavioural requirement gets one second look before it becomes a gap. **Gaps are derived**, not stored by the model: a requirement is unmatched if it has no effective mapping (confirmed, or proposed above the threshold; rejected never counts) and a crawled screen is undocumented if no requirement maps to it. They are recomputed after every human confirm/reject/link, and are flagged when the crawl was partial. |
+| **Test generation** | Two sources, one validator. **Rules** (no model) derive mechanical cases from recorded constraints: required/empty, email format, length and numeric boundaries, option lists, a positive form flow, and who can open a screen; expected messages are the app's own when the crawl saw one, otherwise the case says the expectation is *inferred*. The **author agent** (prompt `author-v3`) writes business-rule and end-to-end scenarios over a requirement's mapped screens; it may only name screens and labels printed on the cards, so code drops any case that references an invented or destructive control. A form's path is the chain of controls that opens it (page → row menu → dialog), per-row controls add a "a row must exist" precondition, and a role is said to lack access only if its crawl finished. Cases are de-duplicated (exact signature across requirements, with `also_covers` keeping traceability; cosine for near-duplicates) and trivial ones are filtered. Steps are structured (`action`, `target label`, `value`) and rendered to text; test data never contains credentials. |
 | **Critic** | Scores business relevance and flags trivial/duplicate cases; grounding is checked in code, not by the LLM. |
 | **Common** | Untrusted text is delimited as data; structured output everywhere; low temperature for extraction/judging; prompt templates are versioned files; every prompt and response is stored in the trace (with secrets redacted). |
 

@@ -21,11 +21,13 @@ from app.models import Message, User
 from app.qa.events import TERMINAL_RUN_STATUSES, EventPublisher, stream_key
 from app.qa.models import AgentEvent, AgentRun, Run
 from app.qa.runs.control import RunControl
+from app.qa.runs.human import submit_human_value
 from app.qa.runs.persist import persist_events
 from app.qa.schemas import (
     AgentPublic,
     ControlRequest,
     EventPublic,
+    HumanInput,
     RunCreate,
     RunPublic,
 )
@@ -173,6 +175,29 @@ async def _apply_control(
             requested_by=str(user_id),
         )
         await events.aclose()
+    finally:
+        await redis.aclose()
+
+
+@router.post("/runs/{run_id}/human-input", response_model=Message)
+def human_input(
+    session: SessionDep,
+    current_user: CurrentUser,
+    run_id: uuid.UUID,
+    body: HumanInput,
+) -> Any:
+    """Answer a `needs_human` prompt (a one-time code). The value goes to Redis, never to events."""
+    run = get_owned_run(session, current_user, run_id)
+    if run.status not in LIVE_STATUSES:
+        raise HTTPException(status_code=409, detail=f"Run is {run.status}")
+    from_thread.run(_submit_human, run_id, body.role, body.value.get_secret_value())
+    return Message(message="sent")
+
+
+async def _submit_human(run_id: uuid.UUID, role: str, value: str) -> None:
+    redis = Redis.from_url(settings.REDIS_URL, decode_responses=True)
+    try:
+        await submit_human_value(redis, str(run_id), role, value)
     finally:
         await redis.aclose()
 

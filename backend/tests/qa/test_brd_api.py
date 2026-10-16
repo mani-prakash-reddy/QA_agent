@@ -74,7 +74,7 @@ def ideal_model(prompt: str) -> dict[str, Any]:
 
 def fake_embed_factory() -> Callable[..., Any]:
     async def fake_embed(texts: list[str], *, confidential: bool) -> list[list[float]]:  # noqa: ARG001
-        return [[0.01 * (i % 7)] * 1024 for i, _ in enumerate(texts)]
+        return [[0.01 * (i % 7)] * 1536 for i, _ in enumerate(texts)]
 
     return fake_embed
 

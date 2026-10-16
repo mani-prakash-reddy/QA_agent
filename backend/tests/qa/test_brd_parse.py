@@ -167,3 +167,41 @@ def test_word_coverage_reports_loss() -> None:
     assert word_coverage("alpha beta gamma delta", "alpha beta gamma delta") == 1.0
     assert word_coverage("alpha beta gamma delta", "alpha beta") == 0.5
     assert word_coverage("Page 1 alpha", "alpha", ignore={"Page 1"}) == 1.0
+
+
+def _scanned_pdf() -> bytes:
+    """A page whose text exists only as pixels."""
+    import pymupdf
+
+    src = pymupdf.open()
+    page = src.new_page()
+    page.insert_text((72, 90), "Business Requirements", fontsize=22)
+    page.insert_text((72, 140), "1. Login", fontsize=16)
+    page.insert_text(
+        (72, 175),
+        "FR-1: The user shall sign in with an email and a password.",
+        fontsize=11,
+    )
+    page.insert_text(
+        (72, 195), "FR-2: A locked account shall show an error message.", fontsize=11
+    )
+    out = pymupdf.open()
+    scan = out.new_page(width=page.rect.width, height=page.rect.height)
+    scan.insert_image(scan.rect, pixmap=page.get_pixmap(dpi=150))
+    assert not scan.get_text().strip(), "the fixture must have no text layer"
+    return out.tobytes()
+
+
+def test_scanned_pdf_is_read_with_ocr() -> None:
+    parsed = parse_bytes(_scanned_pdf(), "scan.pdf")
+    text = " ".join(b.text for b in parsed.blocks).lower()
+    assert "fr-1" in text and "sign in with an email" in text
+    assert "locked account" in text
+    assert any(b.kind == "heading" for b in parsed.blocks)
+    assert any("OCR" in w for w in parsed.warnings), parsed.warnings
+
+
+def test_pdf_ligatures_are_expanded() -> None:
+    from app.qa.brd.parse import unligature
+
+    assert unligature("notiﬁed ﬂow oﬃce") == "notified flow office"

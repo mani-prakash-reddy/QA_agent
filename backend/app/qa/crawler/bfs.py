@@ -19,7 +19,21 @@ logger = logging.getLogger(__name__)
 
 CLICKABLE = {"button", "tab", "menuitem", "combobox"}
 TOGGLES = {"checkbox", "radio", "switch"}
-IGNORED_SCHEMES = ("mailto:", "tel:", "javascript:", "#", "data:")
+IGNORED_SCHEMES = ("mailto:", "tel:", "javascript:", "data:")
+
+
+def _ignored_href(href: str) -> bool:
+    """A same-page anchor ("#top") is not a screen; a hash route ("#/tickets") is."""
+    if href.startswith("#"):
+        return not href.startswith(("#/", "#!/"))
+    return href.startswith(IGNORED_SCHEMES)
+
+
+# Addresses that download a file or a feed (exports): not screens, and navigating to them aborts.
+DOWNLOAD_RE = re.compile(
+    r"\.(csv|pdf|atom|rss|xml|zip|gz|xlsx?|docx?|pptx?|png|jpe?g|gif|svg|ico|txt|diff|patch)(\?|#|$)",
+    re.I,
+)
 MAX_CLICKS_PER_STATE = 40
 REPEAT_THRESHOLD = (
     3  # this many look-alike controls in one screen = a list of the same component
@@ -159,10 +173,23 @@ class BfsExplorer:
         self, snap: Snapshot, depth: int, from_state: uuid.UUID
     ) -> None:
         for e in snap.elements:
-            if not e.href or e.href.startswith(IGNORED_SCHEMES):
+            if not e.href or _ignored_href(e.href):
                 continue
             url = urljoin(snap.url, e.href)
             label = clean_label(e.label)[0]
+            if DOWNLOAD_RE.search(urlsplit(url).path + ("?" if "?" in url else "")):
+                self.ctx.resources.setdefault("_pending_logs", []).append(
+                    ("download_link", url, label)
+                )
+                continue
+            verdict = self.crawl.policy.classify(label, e.href)
+            if (
+                verdict.blocked
+            ):  # "Sign out", a delete link: never opened by address either
+                self.ctx.resources.setdefault("_pending_logs", []).append(
+                    (verdict.reason or "denylist", url, label)
+                )
+                continue
             if not self.crawl.is_internal(url):
                 host = urlsplit(url).netloc
                 if (
@@ -373,7 +400,7 @@ class BfsExplorer:
                 continue
             if (
                 href
-                and not href.startswith(IGNORED_SCHEMES)
+                and not _ignored_href(href)
                 and self.crawl.is_internal(urljoin(page_url, href))
             ):
                 # a link in a menu: queue it instead of clicking

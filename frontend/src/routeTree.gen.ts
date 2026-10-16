@@ -16,7 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
-import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutIntegrationsRouteImport } from './routes/_layout/integrations'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutProjectsIndexRouteImport } from './routes/_layout/projects.index'
 import { Route as LayoutProjectsProjectIdRouteImport } from './routes/_layout/projects.$projectId'
@@ -56,9 +56,9 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutItemsRoute = LayoutItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
+const LayoutIntegrationsRoute = LayoutIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
@@ -89,7 +89,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
+  '/integrations': typeof LayoutIntegrationsRoute
   '/settings': typeof LayoutSettingsRoute
   '/projects/$projectId': typeof LayoutProjectsProjectIdRoute
   '/runs/$runId': typeof LayoutRunsRunIdRoute
@@ -101,7 +101,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
+  '/integrations': typeof LayoutIntegrationsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
   '/projects/$projectId': typeof LayoutProjectsProjectIdRoute
@@ -116,7 +116,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/integrations': typeof LayoutIntegrationsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/projects/$projectId': typeof LayoutProjectsProjectIdRoute
@@ -132,7 +132,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/items'
+    | '/integrations'
     | '/settings'
     | '/projects/$projectId'
     | '/runs/$runId'
@@ -144,7 +144,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/items'
+    | '/integrations'
     | '/settings'
     | '/'
     | '/projects/$projectId'
@@ -158,7 +158,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
-    | '/_layout/items'
+    | '/_layout/integrations'
     | '/_layout/settings'
     | '/_layout/'
     | '/_layout/projects/$projectId'
@@ -225,11 +225,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/items': {
-      id: '/_layout/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof LayoutItemsRouteImport
+    '/_layout/integrations': {
+      id: '/_layout/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof LayoutIntegrationsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/settings': {
@@ -265,7 +265,7 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutIntegrationsRoute: typeof LayoutIntegrationsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutProjectsProjectIdRoute: typeof LayoutProjectsProjectIdRoute
@@ -275,7 +275,7 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
-  LayoutItemsRoute: LayoutItemsRoute,
+  LayoutIntegrationsRoute: LayoutIntegrationsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutProjectsProjectIdRoute: LayoutProjectsProjectIdRoute,

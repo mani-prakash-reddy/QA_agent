@@ -34,6 +34,10 @@ export type LiveState = {
     errors: number
     toolCalls: number
     requirements: number
+    matched: number
+    generated: number
+    notUi: number
+    unmatched: number
     rejected: number
     chunksDone: number
     chunksTotal: number
@@ -60,6 +64,10 @@ export const initialLive: LiveState = {
     errors: 0,
     toolCalls: 0,
     requirements: 0,
+    matched: 0,
+    generated: 0,
+    notUi: 0,
+    unmatched: 0,
     rejected: 0,
     chunksDone: 0,
     chunksTotal: 0,
@@ -154,8 +162,20 @@ function apply(state: LiveState, e: RunEvent): LiveState {
     case "requirement_extracted":
       next.counters.requirements += 1
       break
+    case "cases_generated":
+      next.counters.generated += Number(p.rule ?? 0) + Number(p.llm ?? 0)
+      break
+    case "requirement_mapped":
+      if (p.outcome === "matched") next.counters.matched += 1
+      else if (p.outcome === "not_ui") next.counters.notUi += 1
+      else next.counters.unmatched += 1
+      break
     case "metric":
-      if (p.kind === "ingest_progress") {
+      if (
+        p.kind === "mapping_progress" ||
+        p.kind === "generation_progress" ||
+        p.kind === "ingest_progress"
+      ) {
         next.counters.chunksDone = p.done
         next.counters.chunksTotal = p.total
       }

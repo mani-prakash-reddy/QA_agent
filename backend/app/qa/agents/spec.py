@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 AgentKind = Literal[
-    "supervisor", "explorer", "test_author", "mapper", "critic", "extractor"
+    "supervisor", "scout", "explorer", "test_author", "mapper", "critic", "extractor"
 ]
 
 KB_READ = {
@@ -43,6 +43,7 @@ ORCHESTRATION = {
 # Upper bound of tools per agent kind. A spec's tools must be a subset.
 KIND_TOOLS: dict[str, set[str]] = {
     "supervisor": ORCHESTRATION | KB_READ | BRD_READ | {"browser_snapshot"},
+    "scout": {"browser_snapshot", "browser_navigate", "browser_back"} | KB_READ,
     "explorer": BROWSER | RECORDING | KB_READ,
     "mapper": KB_READ | BRD_READ,
     "test_author": KB_READ
@@ -127,7 +128,7 @@ def validate_spec(
         raise SpecError("prompt_extra too long")
     if spec.scope.role_ref is not None and spec.scope.role_ref not in known_roles:
         raise SpecError(f"unknown role_ref '{spec.scope.role_ref}'")
-    if spec.kind == "explorer" and spec.scope.role_ref is None:
+    if spec.kind in {"explorer", "scout"} and spec.scope.role_ref is None:
         raise SpecError("explorer requires scope.role_ref")
     b = spec.budget
     if (

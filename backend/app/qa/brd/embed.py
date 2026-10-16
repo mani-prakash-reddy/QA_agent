@@ -1,4 +1,4 @@
-"""Requirement embeddings (OpenRouter, 1024-d). Failures never block ingestion."""
+"""Requirement embeddings (Azure OpenAI ada-002 or an OpenAI-compatible endpoint; 1536-d). Failures never block ingestion."""
 
 from app.qa.llm.gateway import get_embeddings
 

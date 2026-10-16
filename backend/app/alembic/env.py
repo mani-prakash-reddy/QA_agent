@@ -30,9 +30,12 @@ def include_object(object, name, type_, reflected, compare_to):
     """Keep autogenerate away from tables owned by extensions/libraries.
 
     - LangGraph's checkpointer creates `checkpoint*` tables itself (AsyncPostgresSaver.setup()).
+    - HNSW indexes are created by hand in migrations (the model cannot declare them).
     - Apache AGE's catalog (`ag_graph`, `ag_label`, ...) is visible because ag_catalog is on
       the search_path; dropping it would destroy the graph extension.
     """
+    if type_ == "index" and reflected and name.endswith("_hnsw"):
+        return False
     table = name if type_ == "table" else getattr(getattr(object, "table", None), "name", None)
     if table and reflected and (table.startswith("checkpoint") or table.startswith("ag_")):
         return False

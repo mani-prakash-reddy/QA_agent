@@ -28,6 +28,9 @@ function AddRole({ projectId }: { projectId: string }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [loginUrl, setLoginUrl] = useState("")
+  const [mfa, setMfa] = useState("none")
+  const [totpSeed, setTotpSeed] = useState("")
+  const [session, setSession] = useState("")
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
@@ -37,8 +40,18 @@ function AddRole({ projectId }: { projectId: string }) {
         path: { project_id: projectId },
         body: {
           name,
-          login_recipe: loginUrl ? { login_url: loginUrl } : {},
-          credentials: { username, password },
+          login_recipe: {
+            ...(loginUrl ? { login_url: loginUrl } : {}),
+            ...(mfa !== "none" ? { mfa } : {}),
+          },
+          credentials: {
+            username,
+            password,
+            ...(mfa === "totp" ? { totp_seed: totpSeed.trim() } : {}),
+            ...(mfa === "storage_state"
+              ? { storage_state: session.trim() }
+              : {}),
+          },
         },
       }),
     onSuccess: () => {
@@ -51,10 +64,17 @@ function AddRole({ projectId }: { projectId: string }) {
       setUsername("")
       setPassword("")
       setLoginUrl("")
+      setMfa("none")
+      setTotpSeed("")
+      setSession("")
     },
     onError: handleError.bind(showErrorToast),
   })
-  const valid = name.trim() && username.trim() && password
+  const valid =
+    name.trim() &&
+    username.trim() &&
+    (mfa === "storage_state" ? session.trim() : password) &&
+    (mfa !== "totp" || totpSeed.trim())
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -99,14 +119,67 @@ function AddRole({ projectId }: { projectId: string }) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="r-pass">Password</Label>
-            <PasswordInput
-              id="r-pass"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-            />
+            <Label htmlFor="r-mfa">Sign-in method</Label>
+            <select
+              id="r-mfa"
+              className="h-9 rounded-md border bg-background px-2 text-sm"
+              value={mfa}
+              onChange={(e) => setMfa(e.target.value)}
+            >
+              <option value="none">Username and password</option>
+              <option value="totp">Password + authenticator code (seed)</option>
+              <option value="otp_human">
+                Password + a code I type during the crawl
+              </option>
+              <option value="storage_state">
+                Saved browser session (CAPTCHA / single sign-on)
+              </option>
+            </select>
           </div>
+          {mfa !== "storage_state" && (
+            <div className="grid gap-2">
+              <Label htmlFor="r-pass">Password</Label>
+              <PasswordInput
+                id="r-pass"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+          )}
+          {mfa === "totp" && (
+            <div className="grid gap-2">
+              <Label htmlFor="r-seed">Authenticator secret (base32)</Label>
+              <PasswordInput
+                id="r-seed"
+                value={totpSeed}
+                onChange={(e) => setTotpSeed(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+          )}
+          {mfa === "otp_human" && (
+            <p className="text-xs text-muted-foreground">
+              The run pauses and asks you for the code on its page when the
+              application asks for it.
+            </p>
+          )}
+          {mfa === "storage_state" && (
+            <div className="grid gap-2">
+              <Label htmlFor="r-session">Browser session (JSON)</Label>
+              <textarea
+                id="r-session"
+                className="min-h-24 rounded-md border bg-background p-2 font-mono text-xs"
+                value={session}
+                onChange={(e) => setSession(e.target.value)}
+                placeholder='{"cookies": [...], "origins": [...]}'
+              />
+              <p className="text-xs text-muted-foreground">
+                Sign in yourself, export the session (Playwright storage state)
+                and paste it. It is stored encrypted, like a password.
+              </p>
+            </div>
+          )}
           <div className="grid gap-2">
             <Label htmlFor="r-login">Login page path (optional)</Label>
             <Input

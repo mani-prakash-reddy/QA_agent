@@ -68,7 +68,7 @@ services:
       ARTIFACT_DIR: /data/artifacts
       # Encrypts role credentials at rest (Fernet key; see .env.example). Not an LLM secret.
       CREDENTIAL_ENCRYPTION_KEY: ${CREDENTIAL_ENCRYPTION_KEY:-}
-      ALLOWED_TARGET_HOSTS: ${ALLOWED_TARGET_HOSTS:-localhost,127.0.0.1,frontend,juice-shop}
+      ALLOWED_TARGET_HOSTS: ${ALLOWED_TARGET_HOSTS:-localhost,127.0.0.1,frontend,juice-shop,demo-leave,demo-stock,demo-help,demo-testrail-mock}
       # Email is disabled (no SMTP_HOST). To enable it, set SMTP_* and EMAILS_FROM_EMAIL here.
       SENTRY_DSN: ${SENTRY_DSN:-}
     volumes:
@@ -131,7 +131,11 @@ services:
       EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
       EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-liquid/lfm-2.5-embedding-350m:free}
-      EMBEDDING_DIM: ${EMBEDDING_DIM:-1024}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-1536}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2024-12-01-preview}
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:-}
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
     develop:
       watch:
         - path: ./backend/app
@@ -205,6 +209,65 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
+
+  # Redmine: project management with roles, issues, forms and an admin area (SQLite, one container).
+  # `docker compose --profile demo-redmine up -d redmine`; accounts are created by the developer.
+  redmine:
+    profiles: [demo-redmine]
+    image: redmine:6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+
+  # Gitea: a git forge (SQLite, install wizard skipped). `docker compose --profile demo-gitea up -d gitea`
+  gitea:
+    profiles: [demo-gitea]
+    image: gitea/gitea:1.24
+    restart: unless-stopped
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__ROOT_URL: "http://localhost:3002/"
+      GITEA__service__DISABLE_REGISTRATION: "false"
+      GITEA__server__OFFLINE_MODE: "true"
+    ports:
+      - "127.0.0.1:3002:3000"
+
+  # --- Purpose-built test applications (demo/apps): known rules, roles, MFA, expiring sessions ---
+  # Accounts come from DEMO_USERS (local demo logins, listed in demo/apps/README.md).
+  demo-leave:
+    profiles: [demo-leave]
+    build: ./demo/apps
+    environment:
+      APP: leavetrack
+      DEMO_USERS: '[{"email":"employee@demo.test","password":"Employee-Demo-1","role":"employee","name":"Uma User"},{"email":"manager@demo.test","password":"Manager-Demo-1","role":"manager","name":"Mia Manager"},{"email":"hr@demo.test","password":"Hr-Demo-1","role":"hr","name":"Hana HR","totp_seed":"JBSWY3DPEHPK3PXP"}]'
+    ports:
+      - "127.0.0.1:3101:3000"
+  demo-stock:
+    profiles: [demo-stock]
+    build: ./demo/apps
+    environment:
+      APP: stockroom
+      DEMO_USERS: '[{"email":"admin@demo.test","password":"Admin-Demo-1","role":"admin","name":"Alex Admin"},{"email":"clerk@demo.test","password":"Clerk-Demo-1","role":"clerk","name":"Cleo Clerk"},{"email":"viewer@demo.test","password":"Viewer-Demo-1","role":"viewer","name":"Vic Viewer"}]'
+    ports:
+      - "127.0.0.1:3102:3000"
+  # A stand-in for TestRail's API so the integration can be tried without an account (not TestRail).
+  # URL http://demo-testrail-mock:3000 (worker/backend) or http://localhost:3104; login qa@demo.test / mock-key.
+  demo-testrail-mock:
+    profiles: [demo-testrail-mock]
+    build: ./demo/apps
+    environment:
+      APP: mocktestrail
+    ports:
+      - "127.0.0.1:3104:3000"
+  demo-help:
+    profiles: [demo-help]
+    build: ./demo/apps
+    environment:
+      APP: helpdesk
+      SESSION_TTL: ${DEMO_HELP_SESSION_TTL:-120}
+      DEMO_USERS: '[{"email":"customer@demo.test","password":"Customer-Demo-1","role":"customer","name":"Cam Customer"},{"email":"agent@demo.test","password":"Agent-Demo-1","role":"agent","name":"Ada Agent"},{"email":"admin@demo.test","password":"Admin-Demo-1","role":"admin","name":"Alex Admin"}]'
+    ports:
+      - "127.0.0.1:3103:3000"
 
 volumes:
   app-db-data:

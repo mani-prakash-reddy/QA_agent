@@ -6,10 +6,17 @@ Every state-changing request that reaches the server is recorded in `FixtureServ
 
 import json
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
+from app.qa.security.totp import totp
+
+OTP_SEED = "JBSWY3DPEHPK3PXP"
+HUMAN_CODE = "424242"
 USERS = {
+    "totp@fixture.test": ("T0tp-Fixture-pass", "admin"),
+    "human@fixture.test": ("Hum4n-Fixture-pass", "admin"),
     "admin@fixture.test": ("Adm1n-Fixture-pass", "admin"),
     "user@fixture.test": ("Us3r-Fixture-pass", "user"),
 }
@@ -22,13 +29,28 @@ LOGIN_HTML = """<!doctype html><html><head><title>Sign in</title></head><body>
 <form id="f"><label for="email">Email</label><input id="email" type="email" name="email">
 <label for="password">Password</label><input id="password" type="password" name="password">
 <button type="button" onclick="document.getElementById('err').textContent='google login not supported'">Sign in with Google</button>
-<button type="submit">Sign in</button></form><p id="err" role="alert"></p>
+<button type="submit">Sign in</button></form><p id="err" role="alert"></p>__CAPTCHA__
 <script>
 document.getElementById('f').addEventListener('submit', async (e) => {
   e.preventDefault();
   const r = await fetch('/api/login', {method:'POST', headers:{'content-type':'application/json'},
     body: JSON.stringify({email: email.value, password: password.value})});
-  if (r.ok) location.href = '/'; else document.getElementById('err').textContent = 'Invalid credentials';
+  if (!r.ok) { document.getElementById('err').textContent = 'Invalid credentials'; return; }
+  const j = await r.json();
+  if (j.otp) {
+    const em = email.value;
+    document.getElementById('f').innerHTML = '<label for="code">Verification code</label>' +
+      '<input id="code" name="code" autocomplete="one-time-code"><button type="submit">Verify</button>';
+    document.getElementById('f').onsubmit = null;
+    document.getElementById('f').addEventListener('submit', async (e2) => {
+      e2.preventDefault(); e2.stopImmediatePropagation();
+      const v = await fetch('/api/verify', {method:'POST', headers:{'content-type':'application/json'},
+        body: JSON.stringify({email: em, code: document.getElementById('code').value})});
+      if (v.ok) location.href = '/'; else document.getElementById('err').textContent = 'Wrong code';
+    }, true);
+    return;
+  }
+  location.href = '/';
 });
 </script></body></html>"""
 
@@ -128,6 +150,8 @@ class FixtureServer:
     def __init__(self) -> None:
         self.mutations: list[tuple[str, str]] = []
         self.logins: list[str] = []
+        self.expire_next = 0  # number of upcoming page loads that answer "signed out"
+        self.verified: list[str] = []
         self._lock = threading.Lock()
         outer = self
 
@@ -166,9 +190,25 @@ class FixtureServer:
                         "application/json",
                     )
                 elif self.path.startswith("/login"):
-                    self._send(200, LOGIN_HTML)
+                    captcha = (
+                        '<div class="g-recaptcha" data-sitekey="x">I am not a robot</div>'
+                        if "captcha" in self.path
+                        else ""
+                    )
+                    self._send(200, LOGIN_HTML.replace("__CAPTCHA__", captcha))
                 else:
                     role = self._role()
+                    if role and outer.expire_next > 0:
+                        outer.expire_next -= 1
+                        self._send(
+                            302,
+                            "",
+                            extra={
+                                "Location": "/login",
+                                "Set-Cookie": "role=; Path=/; Max-Age=0",
+                            },
+                        )
+                        return
                     if not role:
                         self._send(302, "", extra={"Location": "/login"})
                         return
@@ -183,12 +223,38 @@ class FixtureServer:
             def _mutation(self) -> None:
                 length = int(self.headers.get("Content-Length") or 0)
                 body = self.rfile.read(length) if length else b""
+                if self.path == "/api/verify":
+                    data = json.loads(body or b"{}")
+                    email = data.get("email", "")
+                    now = time.time()
+                    good = {totp(OTP_SEED, at=now + d) for d in (-30, 0, 30)}
+                    expected = HUMAN_CODE if email.startswith("human") else None
+                    ok = (
+                        data.get("code") == expected
+                        if expected
+                        else data.get("code") in good
+                    )
+                    if ok and email in USERS:
+                        with outer._lock:
+                            outer.verified.append(email)
+                        self._send(
+                            200,
+                            "{}",
+                            "application/json",
+                            {"Set-Cookie": f"role={USERS[email][1]}; Path=/"},
+                        )
+                    else:
+                        self._send(401, "{}", "application/json")
+                    return
                 if self.path == "/api/login":
                     data = json.loads(body or b"{}")
                     cred = USERS.get(data.get("email", ""))
                     if cred and cred[0] == data.get("password"):
                         with outer._lock:
                             outer.logins.append(data["email"])
+                        if data["email"].startswith(("totp", "human")):
+                            self._send(200, '{"otp": true}', "application/json")
+                            return
                         self._send(
                             200,
                             "{}",

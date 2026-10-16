@@ -289,7 +289,7 @@ async def run_ingest(rc: RunContext) -> dict[str, Any]:
                 confidential=rc.project.confidential,
             )
             await asyncio.to_thread(
-                _store_embeddings, req_ids, vectors, settings.EMBEDDING_MODEL
+                _store_embeddings, req_ids, vectors, settings.embedding_model_id
             )
             embedded = len(vectors)
         except Exception as exc:

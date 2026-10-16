@@ -87,7 +87,7 @@ def numbered_heading(line: str) -> tuple[int, str] | None:
 
 def _md_table(rows: list[list[str]]) -> str:
     rows = [
-        [re.sub(r"\s+", " ", c).strip().replace("|", "/") for c in r]
+        [unligature(re.sub(r"\s+", " ", c)).strip().replace("|", "/") for c in r]
         for r in rows
         if any(c.strip() for c in r)
     ]
@@ -291,8 +291,18 @@ class _PageBuilder:
         return [b for _, b in sorted(self.items, key=lambda kv: kv[0])]
 
 
+_LIGATURES = str.maketrans(
+    {"ﬁ": "fi", "ﬂ": "fl", "ﬀ": "ff", "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st"}
+)
+
+
+def unligature(text: str) -> str:
+    """PDF fonts store "fi", "fl"... as single ligature glyphs; a search for "notified" must find them."""
+    return text.translate(_LIGATURES)
+
+
 def _line_text(line: dict[str, Any]) -> str:
-    return "".join(s["text"] for s in line["spans"]).strip()
+    return unligature("".join(s["text"] for s in line["spans"])).strip()
 
 
 def _parse_pdf_page(
@@ -350,6 +360,29 @@ def _parse_pdf_page(
     return builder.blocks()
 
 
+def _ocr_scanned_pages(pages: list[Any]) -> tuple[list[int], int]:
+    """OCR every page that has no text layer (a scan). Returns (page numbers, dropped line count)."""
+    from app.qa.brd import ocr
+
+    done: list[int] = []
+    dropped = 0
+    for no, page in enumerate(pages, start=1):
+        if ocr.page_has_text(page):
+            continue
+        try:
+            kept, bad = ocr.ocr_into_page(page)
+        except (
+            Exception
+        ) as exc:  # no OCR engine / model download failed: say so, keep going
+            raise BrdParseError(
+                f"page {no} is a scan and OCR is unavailable ({type(exc).__name__})"
+            ) from exc
+        if kept:
+            done.append(no)
+            dropped += bad
+    return done, dropped
+
+
 def parse_pdf(data: bytes) -> ParsedDoc:
     import pymupdf
 
@@ -363,6 +396,7 @@ def parse_pdf(data: bytes) -> ParsedDoc:
         raise BrdParseError("the PDF is password protected")
 
     pages: list[Any] = [doc.load_page(i) for i in range(doc.page_count)]
+    ocr_pages, ocr_dropped = _ocr_scanned_pages(pages)
 
     # Pass 1: the body font size, and header/footer lines that repeat across pages.
     sizes: Counter[float] = Counter()
@@ -380,7 +414,7 @@ def parse_pdf(data: bytes) -> ParsedDoc:
                     edges[re.sub(r"\d+", "#", text)] += 1
     if not sizes:
         raise BrdParseError(
-            "the PDF has no extractable text (scanned documents need OCR, which is not supported yet)"
+            "no text could be read from the PDF, not even by OCR (is it blank or an unreadable image?)"
         )
     body = sizes.most_common(1)[0][0]
     repeated = {
@@ -394,7 +428,15 @@ def parse_pdf(data: bytes) -> ParsedDoc:
     for page_no, page in enumerate(pages, start=1):
         blocks.extend(_parse_pdf_page(page, page_no, heading_sizes, repeated))
     parsed = ParsedDoc(blocks=blocks, page_count=doc.page_count, format="pdf")
-    raw = " ".join(page.get_text("text") for page in pages)
+    if ocr_pages:
+        parsed.warnings.append(
+            f"{len(ocr_pages)} page(s) had no text layer and were read with OCR "
+            f"(page {', '.join(map(str, ocr_pages[:8]))}"
+            f"{'…' if len(ocr_pages) > 8 else ''}); recognition can be wrong, so check the "
+            f"requirements against the original"
+            + (f" ({ocr_dropped} unclear line(s) were left out)" if ocr_dropped else "")
+        )
+    raw = unligature(" ".join(page.get_text("text") for page in pages))
     cov = word_coverage(raw, "\n".join(b.text for b in blocks), ignore=repeated)
     if cov < MIN_COVERAGE:
         parsed.warnings.append(

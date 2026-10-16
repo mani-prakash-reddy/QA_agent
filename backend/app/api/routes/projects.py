@@ -41,6 +41,8 @@ def _store_credentials(
     }
     if creds.totp_seed is not None:
         payload["totp_seed"] = creds.totp_seed.get_secret_value()
+    if creds.storage_state is not None:
+        payload["storage_state"] = creds.storage_state.get_secret_value()
     try:
         ciphertext = encrypt_json(payload)
     except CryptoError as exc:

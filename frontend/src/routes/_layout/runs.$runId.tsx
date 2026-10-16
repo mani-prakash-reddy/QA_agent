@@ -3,10 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useEffect, useRef, useState } from "react"
 
 import { RunsService } from "@/client"
-import { AgentTree } from "@/components/Runs/AgentTree"
+import { AgentGraph } from "@/components/Runs/AgentGraph"
 import { EventFeed } from "@/components/Runs/EventFeed"
+import { HumanPrompt, pendingHumanPrompt } from "@/components/Runs/HumanPrompt"
 import { RunControls } from "@/components/Runs/RunControls"
-import { ScreenshotPanel } from "@/components/Runs/ScreenshotPanel"
 import { StatusBadge } from "@/components/Runs/StatusBadge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -77,13 +77,10 @@ function RunPage() {
 
   const started = new Date(run.started_at ?? run.created_at).getTime()
   const ended = run.finished_at ? new Date(run.finished_at).getTime() : now
-  const shotState = selected
-    ? (live.agents[selected]?.lastStateId ?? null)
-    : (live.latestShot?.stateId ?? null)
   const snapshotId = (run.summary as { snapshot_id?: string })?.snapshot_id
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-0 max-w-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -120,7 +117,29 @@ function RunPage() {
               </Link>
             </Button>
           )}
-          {snapshotId && (
+          {run.kind === "generate" && (
+            <Button asChild size="sm" variant="outline">
+              <Link
+                to="/projects/$projectId"
+                params={{ projectId: run.project_id }}
+                search={{ tab: "tests" }}
+              >
+                Review test cases
+              </Link>
+            </Button>
+          )}
+          {run.kind === "map" && (
+            <Button asChild size="sm" variant="outline">
+              <Link
+                to="/projects/$projectId"
+                params={{ projectId: run.project_id }}
+                search={{ tab: "mapping" }}
+              >
+                Review mapping and gaps
+              </Link>
+            </Button>
+          )}
+          {snapshotId && run.kind !== "map" && run.kind !== "generate" && (
             <Button asChild size="sm" variant="outline">
               <Link
                 to="/projects/$projectId"
@@ -133,6 +152,12 @@ function RunPage() {
           )}
         </div>
       </div>
+
+      {active &&
+        (() => {
+          const ask = pendingHumanPrompt(live.events)
+          return ask ? <HumanPrompt runId={runId} event={ask} /> : null
+        })()}
 
       {(run.summary as { partial?: boolean })?.partial && (
         <div
@@ -154,7 +179,43 @@ function RunPage() {
         </div>
       )}
 
-      {run.kind === "ingest" ? (
+      {run.kind === "generate" ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Counter
+            label={`Requirements (of ${live.counters.chunksTotal || "…"})`}
+            value={live.counters.chunksDone}
+          />
+          <Counter
+            label="Cases before filtering"
+            value={live.counters.generated}
+          />
+          <Counter
+            label="Kept"
+            value={Number((run.summary as { cases?: number })?.cases ?? 0)}
+            tone="text-emerald-600 dark:text-emerald-400"
+          />
+          <Counter label="Errors" value={live.counters.errors} />
+        </div>
+      ) : run.kind === "map" ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <Counter
+            label={`Requirements (of ${live.counters.chunksTotal || "…"})`}
+            value={live.counters.chunksDone}
+          />
+          <Counter
+            label="Matched"
+            value={live.counters.matched}
+            tone="text-emerald-600 dark:text-emerald-400"
+          />
+          <Counter
+            label="No screen shows it"
+            value={live.counters.unmatched}
+            tone="text-amber-600 dark:text-amber-400"
+          />
+          <Counter label="Not visible in the UI" value={live.counters.notUi} />
+          <Counter label="Errors" value={live.counters.errors} />
+        </div>
+      ) : run.kind === "ingest" ? (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           <Counter
             label={`Sections (of ${live.counters.chunksTotal || "…"})`}
@@ -192,65 +253,60 @@ function RunPage() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <Card className="lg:col-span-3">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Agents</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AgentTree
-              agents={live.agents}
-              order={live.order}
-              selected={selected}
-              onSelect={setSelected}
-            />
-          </CardContent>
-        </Card>
+      <Card className="min-w-0">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Agents</CardTitle>
+        </CardHeader>
+        <CardContent className="min-w-0">
+          <AgentGraph
+            agents={live.agents}
+            order={live.order}
+            events={live.events}
+            runId={runId}
+            runLive={active}
+            selected={selected}
+            onSelect={setSelected}
+          />
+        </CardContent>
+      </Card>
 
-        <Card className="lg:col-span-5">
-          <CardHeader className="flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base">
-              Live feed
-              {selected && live.agents[selected]
-                ? ` · ${live.agents[selected].role ?? live.agents[selected].kind}`
-                : ""}
-            </CardTitle>
-            <div className="flex gap-3 text-xs text-muted-foreground">
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={showSkipped}
-                  onChange={(e) => setShowSkipped(e.target.checked)}
-                />
-                Skipped
-              </label>
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={detail}
-                  onChange={(e) => setDetail(e.target.checked)}
-                />
-                Tool calls
-              </label>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <EventFeed
-              events={live.events}
-              agents={live.agents}
-              selected={selected}
-              detail={detail}
-              showSkipped={showSkipped}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-4">
-          <CardContent className="pt-6">
-            <ScreenshotPanel stateId={shotState} />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base">
+            Live feed
+            {selected && live.agents[selected]
+              ? ` · ${live.agents[selected].role ?? live.agents[selected].kind}`
+              : ""}
+          </CardTitle>
+          <div className="flex gap-3 text-xs text-muted-foreground">
+            <label className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={showSkipped}
+                onChange={(e) => setShowSkipped(e.target.checked)}
+              />
+              Skipped
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={detail}
+                onChange={(e) => setDetail(e.target.checked)}
+              />
+              Tool calls
+            </label>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <EventFeed
+            events={live.events}
+            agents={live.agents}
+            selected={selected}
+            detail={detail}
+            showSkipped={showSkipped}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }

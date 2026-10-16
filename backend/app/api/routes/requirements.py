@@ -14,7 +14,7 @@ from app.api.deps import CurrentUser, SessionDep
 from app.api.routes.projects import get_owned_project
 from app.models import User
 from app.qa.brd.heuristics import ambiguity_reasons, is_blocking
-from app.qa.models import BrdChunk, Requirement
+from app.qa.models import BrdChunk, Requirement, TestCase
 from app.qa.schemas import (
     BulkAction,
     BulkResult,
@@ -251,9 +251,24 @@ def update_requirement(
     _recheck_ambiguity(r)
     _touch(r)
     session.add(r)
+    _flag_tests_stale(session, r)
     session.commit()
     session.refresh(r)
     return to_public(r)
+
+
+def _flag_tests_stale(session: Session, r: Requirement) -> None:
+    """The wording changed under the test cases. Unreviewed drafts are queued for regeneration;
+    approved or edited cases keep their status but are marked, so nothing a person decided is lost."""
+    for t in session.exec(
+        select(TestCase).where(
+            TestCase.requirement_id == r.id, TestCase.status != "rejected"
+        )
+    ):
+        if t.status == "draft":
+            t.status = "needs_regen"
+        t.evidence = {**t.evidence, "requirement_changed": True}
+        session.add(t)
 
 
 @router.post("/requirements/{requirement_id}/approve", response_model=RequirementPublic)

@@ -92,7 +92,9 @@ class KnowledgeRecorder:
         events: EventPublisher,
         policy: SafetyPolicy,
         artifact_dir: Path,
+        capture_text: bool = True,
     ) -> None:
+        self.capture_text = capture_text
         self.snapshot_id, self.project_id, self.run_id = snapshot_id, project_id, run_id
         self.role_id, self.role_name, self.agent_id = role_id, role_name, agent_id
         self.events, self.policy, self.artifact_dir = events, policy, artifact_dir
@@ -132,6 +134,7 @@ class KnowledgeRecorder:
                     heading=(mask_pii(snap.heading) or None),
                     module=module,
                     nav_path=nav_path,
+                    content=snap.content if self.capture_text else {},
                     discovered_by_agent=self.agent_id,
                     discovery_source=source,
                     depth=depth,
@@ -164,6 +167,31 @@ class KnowledgeRecorder:
                 self._record_children(s, snap, state_id, rec)
             s.commit()
         return rec
+
+    def _record_access_sync(
+        self, state_id: uuid.UUID, access: str, evidence: str
+    ) -> None:
+        stmt = insert(RoleStateAccess).values(
+            snapshot_id=self.snapshot_id,
+            role_id=self.role_id,
+            state_id=state_id,
+            access=access,
+            evidence=evidence[:500],
+        )
+        with Session(engine) as s:
+            s.execute(
+                stmt.on_conflict_do_update(
+                    index_elements=["snapshot_id", "role_id", "state_id"],
+                    set_={"access": access, "evidence": evidence[:500]},
+                )
+            )
+            s.commit()
+
+    async def record_access(
+        self, state_id: uuid.UUID, access: str, evidence: str
+    ) -> None:
+        """What this role got when it opened a screen directly: visible | forbidden | not_found | redirected."""
+        await asyncio.to_thread(self._record_access_sync, state_id, access, evidence)
 
     def _record_children(
         self, s: Session, snap: Snapshot, state_id: uuid.UUID, rec: RecordedState
@@ -422,6 +450,11 @@ class KnowledgeRecorder:
             )
 
     def _log_sync(self, **fields: Any) -> None:
+        # reason/source are short codes (varchar 60/20); a long error message must not lose the log row
+        if fields.get("reason"):
+            fields["reason"] = str(fields["reason"])[:60]
+        if fields.get("source"):
+            fields["source"] = str(fields["source"])[:20]
         with Session(engine) as s:
             s.add(
                 CrawlEvent(

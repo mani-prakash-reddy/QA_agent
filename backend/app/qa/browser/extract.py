@@ -35,8 +35,20 @@ EXTRACT_JS = r"""
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   };
+  // A menu/listbox is a popup only if it floats (fixed/absolute on itself or an ancestor). Some UI kits
+  // put role=menu on an in-flow dropdown *trigger* (Fomantic/Semantic UI); treating that as an open
+  // overlay would hide the whole page behind it.
+  const floats = el => {
+    for (let n = el; n && n !== document.body; n = n.parentElement) {
+      const p = getComputedStyle(n).position;
+      if (p === 'fixed' || p === 'absolute') return true;
+    }
+    return false;
+  };
   const overlays = [...document.querySelectorAll(
-    '[role=dialog],[role=alertdialog],[role=menu],[role=listbox],dialog[open]')].filter(visible);
+    '[role=dialog],[role=alertdialog],[role=menu],[role=listbox],dialog[open]')]
+    .filter(visible)
+    .filter(el => !['menu', 'listbox'].includes(el.getAttribute('role') || '') || floats(el));
   const overlayEl = overlays.length ? overlays[overlays.length - 1] : null;
   const overlayRole = overlayEl ? (overlayEl.getAttribute('role') || 'dialog') : null;
   const scope = overlayEl || document.body;
@@ -152,13 +164,43 @@ EXTRACT_JS = r"""
 
   let rowCount = document.querySelectorAll('tbody tr,[role=row]').length;
   const headings = [...scope.querySelectorAll('h1,h2,h3')].filter(visible).map(txt).filter(Boolean).slice(0, 6);
-  const mainH1 = [...document.querySelectorAll('h1')].filter(visible).map(txt)[0] || '';
+  // Some apps put the *site name* in an <h1> in the header (Redmine) and the page title in an <h2>.
+  const inChrome = n => !!n.closest('header,[role=banner],#header,nav,aside,footer,[role=navigation]');
+  const visibleH1 = [...document.querySelectorAll('h1')].filter(visible);
+  const bodyH1 = visibleH1.find(n => !inChrome(n));
+  const chromeH1 = visibleH1.find(inChrome);
+  const contentH2 = [...document.querySelectorAll('h2')].filter(visible).find(n => !inChrome(n));
+  let mainH1 = bodyH1 ? txt(bodyH1) : '';
+  if (!mainH1 && chromeH1) {
+    const site = txt(chromeH1);
+    // the header h1 is the site name only if the document title carries it too ("Page - Site")
+    mainH1 = contentH2 && document.title.toLowerCase().includes(site.toLowerCase()) ? txt(contentH2) : site;
+  }
   const overlayName = overlayEl ? (overlayEl.getAttribute('aria-label') || labelledBy(overlayEl) ||
     txt(overlayEl.querySelector('h1,h2,h3')) || '') : '';
+  // Static content a requirement may be about: table column headers and short fixed labels/captions.
+  // Table body cells are data and are never read. Masking and filtering happen server-side.
+  const headers = [...scope.querySelectorAll('table')].filter(visible).slice(0, 6).map(t =>
+    [...t.querySelectorAll('thead th,thead td,th[scope=col],[role=columnheader]')].filter(visible)
+      .map(txt).filter(Boolean).slice(0, 14)).filter(h => h.length);
+  const textSel = 'p,li,dt,dd,label,legend,caption,figcaption,span,div,small,strong,b,em,h4,h5,h6';
+  const BAD = 'tbody,[role=row],script,style,noscript,nav,aside,header,footer,[role=navigation],[data-sidebar],[data-private],[data-sensitive]';
+  const texts = [];
+  const seenText = new Set();
+  for (const el of scope.querySelectorAll(textSel)) {
+    if (texts.length >= 60) break;
+    if (el.closest(BAD) && !(overlayEl && overlayEl.contains(el))) continue;
+    if (el.querySelector(sel) || el.closest(sel)) continue;
+    if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+    if (!visible(el)) continue;
+    const t = ownText(el);
+    if (t.length < 3 || t.length > 90 || !/[A-Za-z]/.test(t) || seenText.has(t)) continue;
+    seenText.add(t); texts.push(t);
+  }
   return {
     url: location.href, title: document.title, heading: mainH1, headings,
     overlay: overlayEl ? { role: overlayRole, name: overlayName } : null,
-    elements, forms, row_count: rowCount,
+    elements, forms, row_count: rowCount, headers, texts,
   };
 }
 """
@@ -184,6 +226,35 @@ _PII_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 def mask_pii(text: str) -> str:
     """Screen titles are stored and shown to many people: never keep e-mail addresses in them."""
     return _PII_EMAIL.sub("<email>", text)
+
+
+_NUM = re.compile(r"\d+")
+_LONG_TOKEN = re.compile(r"\b[A-Za-z0-9_-]{24,}\b")
+
+
+def _mask_snippet(text: str) -> str:
+    return _NUM.sub("#", _LONG_TOKEN.sub("<token>", mask_pii(text))).strip()
+
+
+def mask_content(headers: list[list[str]], texts: list[str]) -> dict[str, Any]:
+    """Keep what describes a screen (column headers, fixed captions); drop what is probably data.
+
+    A snippet with digits is data ("3 items", "$12.50", an order id) unless it is a label that ends in a
+    colon ("Total price:"); e-mail addresses and long tokens are masked; digits that remain become '#'."""
+    out_text: list[str] = []
+    for t in texts:
+        if _NUM.search(t) and not t.rstrip().endswith(":"):
+            continue
+        masked = _mask_snippet(t)
+        if masked and masked not in out_text and not _PII_EMAIL.fullmatch(masked):
+            out_text.append(masked[:90])
+    out_headers = [
+        [_mask_snippet(h)[:40] for h in cols if h.strip()] for cols in headers
+    ]
+    return {
+        "headers": [h for h in out_headers if h][:6],
+        "text": out_text[:40],
+    }
 
 
 def route_title(url: str) -> str:
@@ -269,6 +340,8 @@ class Snapshot:
     fp_ignore: str = (
         ""  # regex of labels excluded from a screen's identity (shell toggles)
     )
+    # Masked static content: {"headers": [[col, ...]], "text": [snippet, ...]}; never table data.
+    content: dict[str, Any] = field(default_factory=dict)
 
     def by_handle(self, handle: str) -> Element | None:
         return next((e for e in self.elements if e.h == handle), None)
@@ -368,6 +441,7 @@ async def extract(
             for f in raw["forms"]
         ],
         row_count=raw["row_count"],
+        content=mask_content(raw.get("headers") or [], raw.get("texts") or []),
     )
     snap.route = route_template(snap.url)
     snap.fp_ignore = fp_ignore

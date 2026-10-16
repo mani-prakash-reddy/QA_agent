@@ -117,9 +117,7 @@ def crawl(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Crawl]:
         )
         s.add(project)
         s.flush()
-        for email, (password, role) in USERS.items():
-            if role != "admin":
-                continue
+        for email, password in [("admin@fixture.test", USERS["admin@fixture.test"][0])]:
             r = AppRole(project_id=project.id, name="Admin", login_recipe={})
             s.add(r)
             s.flush()

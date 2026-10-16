@@ -35,6 +35,31 @@ async function downloadJson(snapshotId: string) {
   URL.revokeObjectURL(url)
 }
 
+type MatrixRows = NonNullable<
+  Awaited<ReturnType<typeof KnowledgeService.roleMatrix>>["data"]
+>["rows"]
+
+/** One row per screen name and route: a page recorded once per role (different content) is one screen. */
+function mergeRows(rows: MatrixRows): MatrixRows {
+  const byKey = new Map<string, MatrixRows[number]>()
+  for (const r of rows) {
+    const key = `${r.kind}|${r.route ?? ""}|${r.title}`
+    const have = byKey.get(key)
+    if (!have) {
+      byKey.set(key, { ...r, access: { ...r.access }, denied: { ...r.denied } })
+      continue
+    }
+    for (const [role, ok] of Object.entries(r.access)) {
+      have.access[role] = have.access[role] || ok
+    }
+    have.denied = { ...have.denied, ...r.denied }
+    for (const role of Object.keys(have.access)) {
+      if (have.access[role]) delete have.denied?.[role]
+    }
+  }
+  return [...byKey.values()]
+}
+
 export function ModelPanel({
   projectId,
   snapshotId,
@@ -217,7 +242,7 @@ export function ModelPanel({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {matrix.rows.map((row) => (
+              {mergeRows(matrix.rows).map((row) => (
                 <TableRow key={row.state_id}>
                   <TableCell>
                     {row.title}{" "}
@@ -233,6 +258,13 @@ export function ModelPanel({
                           className="mx-auto h-4 w-4 text-emerald-600"
                           aria-label="can reach"
                         />
+                      ) : row.denied?.[r] ? (
+                        <span
+                          className="text-xs font-medium text-red-600"
+                          title="Opened by address while signed in as this role"
+                        >
+                          {row.denied?.[r].replace("_", " ")}
+                        </span>
                       ) : (
                         <span
                           className="text-muted-foreground"
@@ -248,8 +280,9 @@ export function ModelPanel({
             </TableBody>
           </Table>
           <p className="p-3 text-xs text-muted-foreground">
-            Based on what each role's crawl actually reached. “—” means not
-            observed, not proven forbidden.
+            Based on what each role's crawl reached. A red word (forbidden,
+            redirected, not found) was observed by opening the screen by address
+            as that role; “—” means not observed, not proven forbidden.
           </p>
         </div>
       )}

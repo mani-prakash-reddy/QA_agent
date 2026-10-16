@@ -122,3 +122,81 @@
     cursor: pointer;
   }
 }
+
+/* Agent tree: an inverted org chart; wires are CSS borders so they follow the layout. */
+.agent-tree ul {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  position: relative;
+  margin: 0;
+}
+.agent-tree li {
+  list-style: none;
+  position: relative;
+  padding: 20px 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.agent-tree > ul > li {
+  padding-top: 0;
+}
+.agent-tree li::before,
+.agent-tree li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 20px;
+  border-top: 2px solid var(--wire);
+}
+.agent-tree li::before {
+  right: 50%;
+}
+.agent-tree li::after {
+  left: 50%;
+  border-left: 2px solid var(--wire);
+}
+.agent-tree li:only-child::before,
+.agent-tree li:only-child::after {
+  border-top: 0;
+}
+.agent-tree li:only-child::after {
+  border-left: 2px solid var(--wire);
+}
+.agent-tree li:first-child::before,
+.agent-tree li:last-child::after {
+  border-top-color: transparent;
+}
+.agent-tree li:first-child::after {
+  border-radius: 8px 0 0 0;
+}
+.agent-tree li:last-child::before {
+  border-right: 2px solid var(--wire);
+  border-radius: 0 8px 0 0;
+}
+.agent-tree li:last-child:first-child::before {
+  border-right: 0;
+}
+.agent-tree > ul > li::before,
+.agent-tree > ul > li::after {
+  display: none;
+}
+.agent-tree ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 20px;
+  border-left: 2px solid var(--wire);
+}
+.agent-tree > ul::before {
+  display: none;
+}
+.agent-tree {
+  --wire: color-mix(in oklab, var(--muted-foreground) 55%, transparent);
+}
+.agent-tree .wire-live {
+  --wire: #10b981;
+}

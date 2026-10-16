@@ -35,6 +35,11 @@ EventType = Literal[
     "metric",
     "document_parsed",
     "requirement_extracted",
+    "mapping_started",
+    "requirement_mapped",
+    "gaps_computed",
+    "generation_started",
+    "cases_generated",
 ]
 # Streamed token deltas are live-only; everything else is also persisted.
 LIVE_ONLY: set[str] = {"llm_token"}

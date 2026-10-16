@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { CheckCheck, FileUp, RefreshCw, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-
 import { BrdService, RequirementsService } from "@/client"
 import { StatusBadge } from "@/components/Runs/StatusBadge"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +25,7 @@ import {
   TypeBadge,
   typeLabel,
 } from "./badges"
+import { ConfluenceImport } from "./ConfluenceImport"
 import { RequirementSheet } from "./RequirementSheet"
 
 const select =
@@ -98,7 +98,8 @@ function Documents({ projectId }: { projectId: string }) {
           extracted with a quote from the document, so each one can be checked
           against its source.
         </p>
-        <div>
+        <div className="flex gap-2">
+          <ConfluenceImport projectId={projectId} onDone={refresh} />
           <input
             ref={input}
             type="file"

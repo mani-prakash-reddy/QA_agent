@@ -73,8 +73,11 @@ class ProjectPublic(BaseModel):
 
 class Credentials(BaseModel):
     username: str = Field(min_length=1, max_length=500)
-    password: SecretStr
+    password: SecretStr = SecretStr("")
     totp_seed: SecretStr | None = None
+    # A browser session exported from a real login (Playwright storage state, JSON). The way past
+    # CAPTCHA and single sign-on; used instead of the password when login_recipe.mfa is "storage_state".
+    storage_state: SecretStr | None = None
 
 
 class RoleCreate(BaseModel):
@@ -111,6 +114,11 @@ RunKind = Literal["echo", "crawl", "ingest", "map", "generate", "regenerate", "f
 class RunCreate(BaseModel):
     kind: RunKind
     params: dict[str, Any] = Field(default_factory=dict)
+
+
+class HumanInput(BaseModel):
+    role: str = Field(min_length=1, max_length=100)
+    value: SecretStr = Field(min_length=1, max_length=200)
 
 
 class RunPublic(BaseModel):
@@ -255,6 +263,8 @@ class MatrixRow(BaseModel):
     module: str | None
     route: str | None
     access: dict[str, bool]
+    # what a role got when it opened the screen by address: forbidden | not_found | redirected
+    denied: dict[str, str] = Field(default_factory=dict)
 
 
 class MatrixPublic(BaseModel):
@@ -386,3 +396,247 @@ class RequirementsSummary(BaseModel):
     by_type: dict[str, int]
     needs_decision: int
     approved: int
+
+
+# ---------------------------------------------------------------------------- mapping and gaps
+class MappingRunRequest(BaseModel):
+    snapshot_id: uuid.UUID | None = None  # default: the latest finished crawl
+    threshold: float | None = Field(default=None, ge=0.1, le=0.95)
+
+
+class MappingPublic(BaseModel):
+    id: uuid.UUID
+    requirement_id: uuid.UUID
+    req_key: str
+    requirement_title: str
+    requirement_type: str
+    snapshot_id: uuid.UUID
+    state_id: uuid.UUID
+    screen_title: str
+    screen_route: str | None
+    screen_kind: str
+    confidence: float
+    rationale: str
+    citations: list[Any]
+    retrieval_score: float
+    method: str
+    review_status: str
+    effective: bool  # counts toward coverage at the current threshold
+    updated_at: datetime
+
+
+class MappingUpdate(BaseModel):
+    review_status: Literal["proposed", "confirmed", "rejected"]
+
+
+class MappingCreate(BaseModel):
+    requirement_id: uuid.UUID
+    state_id: uuid.UUID
+    note: str = Field(default="", max_length=600)
+
+
+class GapPublic(BaseModel):
+    id: uuid.UUID
+    snapshot_id: uuid.UUID
+    direction: str
+    code: str
+    reason: str
+    evidence: dict[str, Any]
+    severity: str
+    status: str
+    requirement_id: uuid.UUID | None
+    req_key: str | None
+    requirement_title: str | None
+    requirement_type: str | None
+    requirement_status: str | None
+    state_id: uuid.UUID | None
+    screen_title: str | None
+    screen_route: str | None
+
+
+class GapUpdate(BaseModel):
+    status: Literal["open", "accepted", "resolved"]
+
+
+class CoverageSummary(BaseModel):
+    snapshot_id: uuid.UUID | None
+    threshold: float
+    requirements_total: int
+    requirements_matched: int
+    requirement_gaps: int
+    screens_total: int
+    feature_gaps: int
+    mappings: int
+    confirmed: int
+    rejected: int
+    last_run_id: uuid.UUID | None
+    # The crawl stopped at a budget: a requirement gap may only mean the screen was not reached.
+    crawl_partial: bool = False
+
+
+# ---------------------------------------------------------------------------- test cases
+class GenerateRequest(BaseModel):
+    requirement_ids: list[uuid.UUID] | None = (
+        None  # default: every requirement that can be generated
+    )
+
+
+class TestCasePublic(BaseModel):
+    id: uuid.UUID
+    tc_key: str
+    requirement_id: uuid.UUID
+    req_key: str
+    requirement_title: str
+    also_covers: list[str]
+    state_id: uuid.UUID | None
+    snapshot_id: uuid.UUID
+    module: str | None
+    title: str
+    preconditions: list[Any]
+    steps: list[Any]
+    rendered_steps: list[Any]
+    test_data: list[Any]
+    expected_result: str
+    priority: str
+    test_type: str
+    role_name: str | None
+    origin: str
+    status: str
+    evidence: dict[str, Any]
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class TestCasesPage(BaseModel):
+    data: list[TestCasePublic]
+    count: int
+
+
+class TestCaseStatus(BaseModel):
+    status: Literal["draft", "approved", "rejected"]
+
+
+class TestsSummary(BaseModel):
+    total: int
+    by_status: dict[str, int]
+    by_type: dict[str, int]
+    by_origin: dict[str, int]
+    requirements_total: int
+    requirements_covered: int
+    last_run_id: uuid.UUID | None
+
+
+# ---------------------------------------------------------------------------- review, RTM, exports
+class TestCaseEdit(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=500)
+    preconditions: list[str] | None = None
+    rendered_steps: list[str] | None = None
+    test_data: list[dict[str, str]] | None = None
+    expected_result: str | None = Field(default=None, min_length=1)
+    priority: Literal["P1", "P2", "P3", "P4"] | None = None
+    test_type: (
+        Literal[
+            "positive",
+            "negative",
+            "boundary",
+            "field_validation",
+            "role_access",
+            "e2e",
+            "business_rule",
+        ]
+        | None
+    ) = None
+    role_name: str | None = None
+    note: str = Field(default="", max_length=500)
+
+
+class TestBulk(BaseModel):
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=1000)
+    action: Literal["approve", "reject", "draft"]
+
+
+class RegenerateRequest(BaseModel):
+    feedback: str = Field(default="", max_length=2000)
+
+
+class TestVersionPublic(BaseModel):
+    version: int
+    change_type: str
+    change_note: str
+    content: dict[str, Any]
+    created_at: datetime
+
+
+class RestoreRequest(BaseModel):
+    version: int = Field(ge=1)
+
+
+class RtmRow(BaseModel):
+    requirement_id: uuid.UUID
+    req_key: str
+    title: str
+    type: str
+    review_status: str
+    needs_decision: bool
+    mapped_screens: int
+    tests_own: int
+    tests_linked: int
+    tests_total: int
+    by_type: dict[str, int]
+    approved: int
+    draft: int
+    needs_regen: int
+    rejected_tests: int
+    coverage: str
+    reason: str
+
+
+class RtmPublic(BaseModel):
+    rows: list[RtmRow]
+    requirements: int
+    covered: int
+    uncovered: int
+    needs_decision: int
+    test_cases: int  # non-rejected cases; equals the sum of tests_own
+
+
+class TemplateColumnPublic(BaseModel):
+    key: str
+    header: str
+
+
+class TemplatePublic(BaseModel):
+    columns: list[TemplateColumnPublic]
+    id_prefix: str
+    available: list[TemplateColumnPublic]
+
+
+class TemplateUpdate(BaseModel):
+    columns: list[TemplateColumnPublic] = Field(min_length=1)
+    id_prefix: str = Field(default="TC", pattern=r"^[A-Za-z][A-Za-z0-9_-]{0,9}$")
+
+
+class RunMetric(BaseModel):
+    run_id: uuid.UUID
+    kind: str
+    status: str
+    seconds: float | None
+    input_tokens: int
+    output_tokens: int
+    created_at: datetime
+
+
+class KindMetric(BaseModel):
+    kind: str
+    runs: int
+    seconds: float
+    input_tokens: int
+    output_tokens: int
+
+
+class MetricsPublic(BaseModel):
+    by_kind: list[KindMetric]
+    runs: list[RunMetric]
+    input_tokens: int
+    output_tokens: int

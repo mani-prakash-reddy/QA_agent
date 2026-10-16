@@ -265,3 +265,50 @@ def test_reset_reloads_are_not_recorded_as_transitions(crawl: Crawl) -> None:
         ]
     assert not any(lbl.startswith("navigate ") for lbl in labels), labels
     assert "View profile" in labels  # a real link click-through path is recorded
+
+
+def test_static_content_is_captured_and_masked(crawl: Crawl) -> None:
+    with Session(engine) as s:
+        items = s.exec(
+            select(UiState).where(
+                UiState.snapshot_id == crawl.snapshot_id,
+                UiState.title == "Items",
+                UiState.kind == "page",
+            )
+        ).first()
+        dash = s.exec(
+            select(UiState).where(
+                UiState.snapshot_id == crawl.snapshot_id, UiState.title == "Dashboard"
+            )
+        ).first()
+    assert items and dash
+    assert ["Title", "Actions"] in items.content["headers"]
+    assert "Welcome back" in dash.content["text"]
+    # table body cells are data and never stored
+    assert "Alpha" not in str(items.content) and "Beta" not in str(items.content)
+
+
+def test_hash_routes_are_links_but_page_anchors_are_not() -> None:
+    from app.qa.crawler.bfs import _ignored_href
+
+    assert not _ignored_href("#/tickets/new")
+    assert not _ignored_href("#!/home")
+    assert not _ignored_href("/a/b")
+    assert _ignored_href("#top")
+    assert _ignored_href("mailto:a@b.c")
+    assert _ignored_href("javascript:void(0)")
+
+
+def test_the_sign_in_screen_is_recorded_untouched(crawl: Crawl) -> None:
+    sign_in = [st for st in states(crawl) if st.title == "Sign in"]
+    assert len(sign_in) == 1 and sign_in[0].module == "Sign in"
+    with Session(engine) as s:
+        form = s.exec(select(UiForm).where(UiForm.state_id == sign_in[0].id)).first()
+        fields = [
+            f.label
+            for f in s.exec(select(FormField).where(FormField.form_id == form.id))  # type: ignore[union-attr]
+        ]
+    assert "Email" in fields and "Password" in fields
+    assert crawl.server.logins.count("admin@fixture.test") == 1, (
+        "recording it did not sign in twice"
+    )

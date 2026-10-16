@@ -73,3 +73,23 @@ def test_confidential_project_refuses_free_models() -> None:
         get_chat_model(
             "explorer", overrides={"explorer": "x/y:free"}, confidential=True
         )
+
+
+def test_azure_embeddings_are_preferred_when_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pydantic import SecretStr
+
+    from app.core.config import settings
+    from app.qa.llm.gateway import get_embeddings
+
+    monkeypatch.setattr(settings, "AZURE_OPENAI_ENDPOINT", "https://x.openai.azure.com")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "ada")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_API_KEY", SecretStr("k-not-real"))
+    assert settings.embedding_model_id == "azure:ada"
+    emb = get_embeddings(
+        confidential=True
+    )  # an Azure deployment is fine for confidential data
+    assert type(emb).__name__ == "AzureOpenAIEmbeddings"
+    monkeypatch.setattr(settings, "AZURE_OPENAI_API_KEY", None)
+    assert settings.embedding_model_id == settings.EMBEDDING_MODEL

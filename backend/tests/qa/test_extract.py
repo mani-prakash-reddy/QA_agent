@@ -156,3 +156,27 @@ def test_route_title(url: str, title: str) -> None:
 )
 def test_navigation_labels_that_can_name_a_module(label: str, ok: bool) -> None:
     assert is_section_label(label) is ok
+
+
+def test_mask_content_drops_data_and_masks_identifiers() -> None:
+    from app.qa.browser.extract import mask_content
+
+    out = mask_content(
+        [["Product", "Qty 2", "Price"]],
+        [
+            "Total Price:",
+            "3 items in your basket",  # data: digits, no label colon
+            "Signed in as ana@example.com",
+            "Order id: 12345",
+            "Welcome back",
+            "Welcome back",
+            "token " + "a" * 30,
+        ],
+    )
+    assert out["headers"] == [["Product", "Qty #", "Price"]]
+    assert "Total Price:" in out["text"]
+    assert "3 items in your basket" not in out["text"]
+    assert out["text"].count("Welcome back") == 1
+    assert not any("Order id" in t for t in out["text"])
+    assert "Signed in as <email>" in out["text"]
+    assert not any("ana@" in t or "a" * 24 in t for t in out["text"])

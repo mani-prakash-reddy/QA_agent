@@ -214,6 +214,10 @@ async def browser_navigate(ctx: AgentContext, args: NavigateArgs) -> dict[str, A
     if not ok:
         await crawl.rec.log("skipped", why, url=url, action="navigate")
         raise ToolBlocked(why or "excluded")
+    verdict = crawl.policy.classify("", url)
+    if verdict.blocked:  # a sign-out or delete address is as destructive as its button
+        await crawl.rec.log("blocked", verdict.reason, url=url, action="navigate")
+        raise ToolBlocked(verdict.reason or "denylist")
     if args.fresh:
         crawl.pending_via = (
             None  # a reset reload is housekeeping, not a path through the app

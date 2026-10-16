@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlmodel import Session, col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -266,11 +267,14 @@ def role_matrix(
     names = _role_names(session, snapshot_id)
     roles = sorted(names.values())
     access: dict[uuid.UUID, set[str]] = {}
+    denied: dict[uuid.UUID, dict[str, str]] = {}
     for a in session.exec(
         select(RoleStateAccess).where(RoleStateAccess.snapshot_id == snapshot_id)
     ).all():
         if a.access == "visible":
             access.setdefault(a.state_id, set()).add(names.get(a.role_id, "?"))
+        else:
+            denied.setdefault(a.state_id, {})[names.get(a.role_id, "?")] = a.access
     states = session.exec(
         select(UiState)
         .where(UiState.snapshot_id == snap.id)
@@ -286,6 +290,7 @@ def role_matrix(
                 module=s.module,
                 route=s.route_template,
                 access={r: r in access.get(s.id, set()) for r in roles},
+                denied=denied.get(s.id, {}),
             )
             for s in states
         ],
@@ -401,3 +406,39 @@ def crawl_log(
             for e in rows
         ],
     )
+
+
+@router.post("/snapshots/{snapshot_id}/graph", response_model=dict[str, int])
+def rebuild_graph(
+    session: SessionDep, current_user: CurrentUser, snapshot_id: uuid.UUID
+) -> Any:
+    """(Re)project the snapshot into the Apache AGE graph."""
+    _snapshot(session, current_user, snapshot_id)
+    from app.qa.knowledge.graph import project_snapshot
+
+    return project_snapshot(snapshot_id)
+
+
+class PathStep(BaseModel):
+    screen: str
+    via: str
+
+
+@router.get("/snapshots/{snapshot_id}/path", response_model=list[PathStep])
+def screen_path(
+    session: SessionDep,
+    current_user: CurrentUser,
+    snapshot_id: uuid.UUID,
+    from_state: uuid.UUID,
+    to_state: uuid.UUID,
+) -> Any:
+    """Fewest clicks from one screen to another, answered by the graph."""
+    _snapshot(session, current_user, snapshot_id)
+    from app.qa.knowledge.graph import shortest_path
+
+    path = shortest_path(snapshot_id, from_state, to_state)
+    if path is None:
+        raise HTTPException(
+            status_code=404, detail="No recorded path between those screens"
+        )
+    return path

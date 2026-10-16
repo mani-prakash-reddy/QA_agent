@@ -28,23 +28,31 @@ export function AuthedImage({
       return
     }
     let cancelled = false
+    // The state is announced a moment before its screenshot file exists: retry before giving up, and
+    // never replace the picture on screen with an error while a newer one is on its way.
     void (async () => {
-      try {
-        const r = await fetch(`${apiBase()}${path}`, { headers: authHeaders() })
-        if (!r.ok) throw new Error(String(r.status))
-        const url = URL.createObjectURL(await r.blob())
-        cache.set(path, url)
-        if (!cancelled) setSrc(url)
-      } catch {
-        if (!cancelled) setFailed(true)
+      for (let attempt = 0; attempt < 5 && !cancelled; attempt++) {
+        try {
+          const r = await fetch(`${apiBase()}${path}`, {
+            headers: authHeaders(),
+          })
+          if (!r.ok) throw new Error(String(r.status))
+          const url = URL.createObjectURL(await r.blob())
+          cache.set(path, url)
+          if (!cancelled) setSrc(url)
+          return
+        } catch {
+          await new Promise((res) => setTimeout(res, 1200))
+        }
       }
+      if (!cancelled) setFailed(true)
     })()
     return () => {
       cancelled = true
     }
   }, [path])
 
-  if (failed) {
+  if (failed && !src) {
     return (
       <div className="flex h-40 items-center justify-center rounded-md border text-sm text-muted-foreground">
         Screenshot unavailable

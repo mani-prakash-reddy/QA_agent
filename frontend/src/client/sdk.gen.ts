@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { brdDeleteBrdData, brdDeleteBrdErrors, brdDeleteBrdResponses, brdListBrdData, brdListBrdErrors, brdListBrdResponses, brdListChunksData, brdListChunksErrors, brdListChunksResponses, brdReadBrdData, brdReadBrdErrors, brdReadBrdResponses, brdReextractData, brdReextractErrors, brdReextractResponses, brdUploadBrdData, brdUploadBrdErrors, brdUploadBrdResponses, itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, knowledgeCrawlLogData, knowledgeCrawlLogErrors, knowledgeCrawlLogResponses, knowledgeExportSnapshotData, knowledgeExportSnapshotErrors, knowledgeExportSnapshotResponses, knowledgeListSnapshotsData, knowledgeListSnapshotsErrors, knowledgeListSnapshotsResponses, knowledgeListStatesData, knowledgeListStatesErrors, knowledgeListStatesResponses, knowledgeReadStateData, knowledgeReadStateErrors, knowledgeReadStateResponses, knowledgeRoleMatrixData, knowledgeRoleMatrixErrors, knowledgeRoleMatrixResponses, knowledgeStateScreenshotData, knowledgeStateScreenshotErrors, knowledgeStateScreenshotResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, projectsCreateProjectData, projectsCreateProjectErrors, projectsCreateProjectResponses, projectsCreateRoleData, projectsCreateRoleErrors, projectsCreateRoleResponses, projectsDeleteProjectData, projectsDeleteProjectErrors, projectsDeleteProjectResponses, projectsDeleteRoleData, projectsDeleteRoleErrors, projectsDeleteRoleResponses, projectsListProjectsData, projectsListProjectsErrors, projectsListProjectsResponses, projectsListRolesData, projectsListRolesErrors, projectsListRolesResponses, projectsReadProjectData, projectsReadProjectErrors, projectsReadProjectResponses, projectsSetRoleCredentialsData, projectsSetRoleCredentialsErrors, projectsSetRoleCredentialsResponses, projectsUpdateProjectData, projectsUpdateProjectErrors, projectsUpdateProjectResponses, requirementsAcceptWordingData, requirementsAcceptWordingErrors, requirementsAcceptWordingResponses, requirementsApproveRequirementData, requirementsApproveRequirementErrors, requirementsApproveRequirementResponses, requirementsBulkReviewData, requirementsBulkReviewErrors, requirementsBulkReviewResponses, requirementsCreateRequirementData, requirementsCreateRequirementErrors, requirementsCreateRequirementResponses, requirementsListRequirementsData, requirementsListRequirementsErrors, requirementsListRequirementsResponses, requirementsReadRequirementData, requirementsReadRequirementErrors, requirementsReadRequirementResponses, requirementsRejectRequirementData, requirementsRejectRequirementErrors, requirementsRejectRequirementResponses, requirementsRequirementsSummaryData, requirementsRequirementsSummaryErrors, requirementsRequirementsSummaryResponses, requirementsResetRequirementData, requirementsResetRequirementErrors, requirementsResetRequirementResponses, requirementsUpdateRequirementData, requirementsUpdateRequirementErrors, requirementsUpdateRequirementResponses, runsControlRunData, runsControlRunErrors, runsControlRunResponses, runsCreateRunData, runsCreateRunErrors, runsCreateRunResponses, runsListAgentsData, runsListAgentsErrors, runsListAgentsResponses, runsListEventsData, runsListEventsErrors, runsListEventsResponses, runsListRunsData, runsListRunsErrors, runsListRunsResponses, runsReadRunData, runsReadRunErrors, runsReadRunResponses, runsStreamRunData, runsStreamRunErrors, runsStreamRunResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { brdDeleteBrdData, brdDeleteBrdErrors, brdDeleteBrdResponses, brdImportConfluenceData, brdImportConfluenceErrors, brdImportConfluenceResponses, brdListBrdData, brdListBrdErrors, brdListBrdResponses, brdListChunksData, brdListChunksErrors, brdListChunksResponses, brdReadBrdData, brdReadBrdErrors, brdReadBrdResponses, brdReextractData, brdReextractErrors, brdReextractResponses, brdUploadBrdData, brdUploadBrdErrors, brdUploadBrdResponses, dashboardDashboardData, dashboardDashboardResponses, exportsExportData, exportsExportErrors, exportsExportResponses, exportsMetricsData, exportsMetricsErrors, exportsMetricsResponses, exportsReadRtmData, exportsReadRtmErrors, exportsReadRtmResponses, exportsReadTemplateData, exportsReadTemplateErrors, exportsReadTemplateResponses, exportsUpdateTemplateData, exportsUpdateTemplateErrors, exportsUpdateTemplateResponses, integrationsIntegrationOptionsData, integrationsIntegrationOptionsErrors, integrationsIntegrationOptionsResponses, integrationsListIntegrationsData, integrationsListIntegrationsResponses, integrationsPushData, integrationsPushedData, integrationsPushedErrors, integrationsPushedResponses, integrationsPushErrors, integrationsPushResponses, integrationsRemoveIntegrationData, integrationsRemoveIntegrationErrors, integrationsRemoveIntegrationResponses, integrationsSaveIntegrationData, integrationsSaveIntegrationErrors, integrationsSaveIntegrationResponses, integrationsTestIntegrationData, integrationsTestIntegrationErrors, integrationsTestIntegrationResponses, itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, knowledgeCrawlLogData, knowledgeCrawlLogErrors, knowledgeCrawlLogResponses, knowledgeExportSnapshotData, knowledgeExportSnapshotErrors, knowledgeExportSnapshotResponses, knowledgeListSnapshotsData, knowledgeListSnapshotsErrors, knowledgeListSnapshotsResponses, knowledgeListStatesData, knowledgeListStatesErrors, knowledgeListStatesResponses, knowledgeReadStateData, knowledgeReadStateErrors, knowledgeReadStateResponses, knowledgeRebuildGraphData, knowledgeRebuildGraphErrors, knowledgeRebuildGraphResponses, knowledgeRoleMatrixData, knowledgeRoleMatrixErrors, knowledgeRoleMatrixResponses, knowledgeScreenPathData, knowledgeScreenPathErrors, knowledgeScreenPathResponses, knowledgeStateScreenshotData, knowledgeStateScreenshotErrors, knowledgeStateScreenshotResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, mappingAddMappingData, mappingAddMappingErrors, mappingAddMappingResponses, mappingExportGapsData, mappingExportGapsErrors, mappingExportGapsResponses, mappingListGapsData, mappingListGapsErrors, mappingListGapsResponses, mappingListMappingsData, mappingListMappingsErrors, mappingListMappingsResponses, mappingMappingSummaryData, mappingMappingSummaryErrors, mappingMappingSummaryResponses, mappingReviewMappingData, mappingReviewMappingErrors, mappingReviewMappingResponses, mappingStartMappingData, mappingStartMappingErrors, mappingStartMappingResponses, mappingUpdateGapData, mappingUpdateGapErrors, mappingUpdateGapResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, projectsCreateProjectData, projectsCreateProjectErrors, projectsCreateProjectResponses, projectsCreateRoleData, projectsCreateRoleErrors, projectsCreateRoleResponses, projectsDeleteProjectData, projectsDeleteProjectErrors, projectsDeleteProjectResponses, projectsDeleteRoleData, projectsDeleteRoleErrors, projectsDeleteRoleResponses, projectsListProjectsData, projectsListProjectsErrors, projectsListProjectsResponses, projectsListRolesData, projectsListRolesErrors, projectsListRolesResponses, projectsReadProjectData, projectsReadProjectErrors, projectsReadProjectResponses, projectsSetRoleCredentialsData, projectsSetRoleCredentialsErrors, projectsSetRoleCredentialsResponses, projectsUpdateProjectData, projectsUpdateProjectErrors, projectsUpdateProjectResponses, requirementsAcceptWordingData, requirementsAcceptWordingErrors, requirementsAcceptWordingResponses, requirementsApproveRequirementData, requirementsApproveRequirementErrors, requirementsApproveRequirementResponses, requirementsBulkReviewData, requirementsBulkReviewErrors, requirementsBulkReviewResponses, requirementsCreateRequirementData, requirementsCreateRequirementErrors, requirementsCreateRequirementResponses, requirementsListRequirementsData, requirementsListRequirementsErrors, requirementsListRequirementsResponses, requirementsReadRequirementData, requirementsReadRequirementErrors, requirementsReadRequirementResponses, requirementsRejectRequirementData, requirementsRejectRequirementErrors, requirementsRejectRequirementResponses, requirementsRequirementsSummaryData, requirementsRequirementsSummaryErrors, requirementsRequirementsSummaryResponses, requirementsResetRequirementData, requirementsResetRequirementErrors, requirementsResetRequirementResponses, requirementsUpdateRequirementData, requirementsUpdateRequirementErrors, requirementsUpdateRequirementResponses, runsControlRunData, runsControlRunErrors, runsControlRunResponses, runsCreateRunData, runsCreateRunErrors, runsCreateRunResponses, runsHumanInputData, runsHumanInputErrors, runsHumanInputResponses, runsListAgentsData, runsListAgentsErrors, runsListAgentsResponses, runsListEventsData, runsListEventsErrors, runsListEventsResponses, runsListRunsData, runsListRunsErrors, runsListRunsResponses, runsReadRunData, runsReadRunErrors, runsReadRunResponses, runsStreamRunData, runsStreamRunErrors, runsStreamRunResponses, testsBulkStatusData, testsBulkStatusErrors, testsBulkStatusResponses, testsEditTestData, testsEditTestErrors, testsEditTestResponses, testsListTestsData, testsListTestsErrors, testsListTestsResponses, testsReadTestData, testsReadTestErrors, testsReadTestResponses, testsRegenerateData, testsRegenerateErrors, testsRegenerateResponses, testsRestoreTestData, testsRestoreTestErrors, testsRestoreTestResponses, testsSetStatusData, testsSetStatusErrors, testsSetStatusResponses, testsStartGenerationData, testsStartGenerationErrors, testsStartGenerationResponses, testsTestsSummaryData, testsTestsSummaryErrors, testsTestsSummaryResponses, testsTestVersionsData, testsTestVersionsErrors, testsTestVersionsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -490,6 +490,114 @@ export class ProjectsService {
     }
 }
 
+export class DashboardService {
+    /**
+     * Dashboard
+     */
+    public static dashboard<ThrowOnError extends boolean = true>(options?: Options<dashboardDashboardData, ThrowOnError>) {
+        return (options?.client ?? client).get<dashboardDashboardResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/dashboard/',
+            ...options
+        });
+    }
+}
+
+export class IntegrationsService {
+    /**
+     * List Integrations
+     */
+    public static listIntegrations<ThrowOnError extends boolean = true>(options?: Options<integrationsListIntegrationsData, ThrowOnError>) {
+        return (options?.client ?? client).get<integrationsListIntegrationsResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/integrations/',
+            ...options
+        });
+    }
+    
+    /**
+     * Remove Integration
+     */
+    public static removeIntegration<ThrowOnError extends boolean = true>(options: Options<integrationsRemoveIntegrationData, ThrowOnError>) {
+        return (options.client ?? client).delete<integrationsRemoveIntegrationResponses, integrationsRemoveIntegrationErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/integrations/{platform}',
+            ...options
+        });
+    }
+    
+    /**
+     * Save Integration
+     */
+    public static saveIntegration<ThrowOnError extends boolean = true>(options: Options<integrationsSaveIntegrationData, ThrowOnError>) {
+        return (options.client ?? client).put<integrationsSaveIntegrationResponses, integrationsSaveIntegrationErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/integrations/{platform}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Test Integration
+     */
+    public static testIntegration<ThrowOnError extends boolean = true>(options: Options<integrationsTestIntegrationData, ThrowOnError>) {
+        return (options.client ?? client).post<integrationsTestIntegrationResponses, integrationsTestIntegrationErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/integrations/{platform}/test',
+            ...options
+        });
+    }
+    
+    /**
+     * Integration Options
+     */
+    public static integrationOptions<ThrowOnError extends boolean = true>(options: Options<integrationsIntegrationOptionsData, ThrowOnError>) {
+        return (options.client ?? client).get<integrationsIntegrationOptionsResponses, integrationsIntegrationOptionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/integrations/{platform}/options',
+            ...options
+        });
+    }
+    
+    /**
+     * Push
+     */
+    public static push<ThrowOnError extends boolean = true>(options: Options<integrationsPushData, ThrowOnError>) {
+        return (options.client ?? client).post<integrationsPushResponses, integrationsPushErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/integrations/{platform}/push',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Pushed
+     */
+    public static pushed<ThrowOnError extends boolean = true>(options: Options<integrationsPushedData, ThrowOnError>) {
+        return (options.client ?? client).get<integrationsPushedResponses, integrationsPushedErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/integrations/{platform}/pushed',
+            ...options
+        });
+    }
+}
+
 export class RunsService {
     /**
      * List Runs
@@ -563,6 +671,24 @@ export class RunsService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/runs/{run_id}/control',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Human Input
+     *
+     * Answer a `needs_human` prompt (a one-time code). The value goes to Redis, never to events.
+     */
+    public static humanInput<ThrowOnError extends boolean = true>(options: Options<runsHumanInputData, ThrowOnError>) {
+        return (options.client ?? client).post<runsHumanInputResponses, runsHumanInputErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/runs/{run_id}/human-input',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -675,6 +801,34 @@ export class KnowledgeService {
             ...options
         });
     }
+    
+    /**
+     * Rebuild Graph
+     *
+     * (Re)project the snapshot into the Apache AGE graph.
+     */
+    public static rebuildGraph<ThrowOnError extends boolean = true>(options: Options<knowledgeRebuildGraphData, ThrowOnError>) {
+        return (options.client ?? client).post<knowledgeRebuildGraphResponses, knowledgeRebuildGraphErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/snapshots/{snapshot_id}/graph',
+            ...options
+        });
+    }
+    
+    /**
+     * Screen Path
+     *
+     * Fewest clicks from one screen to another, answered by the graph.
+     */
+    public static screenPath<ThrowOnError extends boolean = true>(options: Options<knowledgeScreenPathData, ThrowOnError>) {
+        return (options.client ?? client).get<knowledgeScreenPathResponses, knowledgeScreenPathErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/snapshots/{snapshot_id}/path',
+            ...options
+        });
+    }
 }
 
 export class BrdService {
@@ -702,6 +856,24 @@ export class BrdService {
             ...options,
             headers: {
                 'Content-Type': null,
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Import Confluence
+     *
+     * Pull one Confluence page as the BRD. The token is used for this request only.
+     */
+    public static importConfluence<ThrowOnError extends boolean = true>(options: Options<brdImportConfluenceData, ThrowOnError>) {
+        return (options.client ?? client).post<brdImportConfluenceResponses, brdImportConfluenceErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/brd/confluence',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
                 ...options.headers
             }
         });
@@ -894,6 +1066,340 @@ export class RequirementsService {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+}
+
+export class MappingService {
+    /**
+     * Start Mapping
+     */
+    public static startMapping<ThrowOnError extends boolean = true>(options: Options<mappingStartMappingData, ThrowOnError>) {
+        return (options.client ?? client).post<mappingStartMappingResponses, mappingStartMappingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/mapping/run',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * List Mappings
+     */
+    public static listMappings<ThrowOnError extends boolean = true>(options: Options<mappingListMappingsData, ThrowOnError>) {
+        return (options.client ?? client).get<mappingListMappingsResponses, mappingListMappingsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/mappings',
+            ...options
+        });
+    }
+    
+    /**
+     * Add Mapping
+     *
+     * A person links a requirement to a screen the judge missed. Always confirmed.
+     */
+    public static addMapping<ThrowOnError extends boolean = true>(options: Options<mappingAddMappingData, ThrowOnError>) {
+        return (options.client ?? client).post<mappingAddMappingResponses, mappingAddMappingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/mappings',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Review Mapping
+     */
+    public static reviewMapping<ThrowOnError extends boolean = true>(options: Options<mappingReviewMappingData, ThrowOnError>) {
+        return (options.client ?? client).patch<mappingReviewMappingResponses, mappingReviewMappingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/mappings/{mapping_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * List Gaps
+     */
+    public static listGaps<ThrowOnError extends boolean = true>(options: Options<mappingListGapsData, ThrowOnError>) {
+        return (options.client ?? client).get<mappingListGapsResponses, mappingListGapsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/gaps',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Gap
+     */
+    public static updateGap<ThrowOnError extends boolean = true>(options: Options<mappingUpdateGapData, ThrowOnError>) {
+        return (options.client ?? client).patch<mappingUpdateGapResponses, mappingUpdateGapErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/gaps/{gap_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Export Gaps
+     */
+    public static exportGaps<ThrowOnError extends boolean = true>(options: Options<mappingExportGapsData, ThrowOnError>) {
+        return (options.client ?? client).get<mappingExportGapsResponses, mappingExportGapsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/gaps/export',
+            ...options
+        });
+    }
+    
+    /**
+     * Mapping Summary
+     */
+    public static mappingSummary<ThrowOnError extends boolean = true>(options: Options<mappingMappingSummaryData, ThrowOnError>) {
+        return (options.client ?? client).get<mappingMappingSummaryResponses, mappingMappingSummaryErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/mapping/summary',
+            ...options
+        });
+    }
+}
+
+export class TestsService {
+    /**
+     * Start Generation
+     */
+    public static startGeneration<ThrowOnError extends boolean = true>(options: Options<testsStartGenerationData, ThrowOnError>) {
+        return (options.client ?? client).post<testsStartGenerationResponses, testsStartGenerationErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/tests/generate',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * List Tests
+     */
+    public static listTests<ThrowOnError extends boolean = true>(options: Options<testsListTestsData, ThrowOnError>) {
+        return (options.client ?? client).get<testsListTestsResponses, testsListTestsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/tests',
+            ...options
+        });
+    }
+    
+    /**
+     * Tests Summary
+     */
+    public static testsSummary<ThrowOnError extends boolean = true>(options: Options<testsTestsSummaryData, ThrowOnError>) {
+        return (options.client ?? client).get<testsTestsSummaryResponses, testsTestsSummaryErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/tests/summary',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Test
+     */
+    public static readTest<ThrowOnError extends boolean = true>(options: Options<testsReadTestData, ThrowOnError>) {
+        return (options.client ?? client).get<testsReadTestResponses, testsReadTestErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Edit Test
+     *
+     * A person rewrites a case. The structured steps are kept as generated (they no longer match the
+     * text), so the case is marked hand-edited and must be approved again.
+     */
+    public static editTest<ThrowOnError extends boolean = true>(options: Options<testsEditTestData, ThrowOnError>) {
+        return (options.client ?? client).patch<testsEditTestResponses, testsEditTestErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Set Status
+     */
+    public static setStatus<ThrowOnError extends boolean = true>(options: Options<testsSetStatusData, ThrowOnError>) {
+        return (options.client ?? client).patch<testsSetStatusResponses, testsSetStatusErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}/status',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Test Versions
+     */
+    public static testVersions<ThrowOnError extends boolean = true>(options: Options<testsTestVersionsData, ThrowOnError>) {
+        return (options.client ?? client).get<testsTestVersionsResponses, testsTestVersionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}/versions',
+            ...options
+        });
+    }
+    
+    /**
+     * Restore Test
+     */
+    public static restoreTest<ThrowOnError extends boolean = true>(options: Options<testsRestoreTestData, ThrowOnError>) {
+        return (options.client ?? client).post<testsRestoreTestResponses, testsRestoreTestErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}/restore',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Bulk Status
+     */
+    public static bulkStatus<ThrowOnError extends boolean = true>(options: Options<testsBulkStatusData, ThrowOnError>) {
+        return (options.client ?? client).post<testsBulkStatusResponses, testsBulkStatusErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/tests/bulk',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Regenerate
+     *
+     * Write this requirement's unreviewed cases again, with the reviewer's comment. Approved and
+     * hand-edited cases are kept.
+     */
+    public static regenerate<ThrowOnError extends boolean = true>(options: Options<testsRegenerateData, ThrowOnError>) {
+        return (options.client ?? client).post<testsRegenerateResponses, testsRegenerateErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/tests/{test_id}/regenerate',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class ExportsService {
+    /**
+     * Read Rtm
+     */
+    public static readRtm<ThrowOnError extends boolean = true>(options: Options<exportsReadRtmData, ThrowOnError>) {
+        return (options.client ?? client).get<exportsReadRtmResponses, exportsReadRtmErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/rtm',
+            ...options
+        });
+    }
+    
+    /**
+     * Export
+     */
+    public static export<ThrowOnError extends boolean = true>(options: Options<exportsExportData, ThrowOnError>) {
+        return (options.client ?? client).get<exportsExportResponses, exportsExportErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/exports/{kind}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Template
+     */
+    public static readTemplate<ThrowOnError extends boolean = true>(options: Options<exportsReadTemplateData, ThrowOnError>) {
+        return (options.client ?? client).get<exportsReadTemplateResponses, exportsReadTemplateErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/template',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Template
+     */
+    public static updateTemplate<ThrowOnError extends boolean = true>(options: Options<exportsUpdateTemplateData, ThrowOnError>) {
+        return (options.client ?? client).put<exportsUpdateTemplateResponses, exportsUpdateTemplateErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/template',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Metrics
+     */
+    public static metrics<ThrowOnError extends boolean = true>(options: Options<exportsMetricsData, ThrowOnError>) {
+        return (options.client ?? client).get<exportsMetricsResponses, exportsMetricsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/projects/{project_id}/metrics',
+            ...options
         });
     }
 }
